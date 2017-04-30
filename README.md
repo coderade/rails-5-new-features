@@ -7,12 +7,12 @@ In addition, it will show the features that are being deprecated or completely r
 
 ## About Ruby on Rails 5
 
-* First major release in three years
+* First major release in three years - That was for the version four, and it's been about a year and a half since Rails 4.2 came out.
 * Faster
 * Less memory usage
 * Less time doing garbage collection (GC)
 * Requires 2.2.2 or greater
-* GC of symbols (Incremental GC)
+* [GC of symbols (Incremental GC)](https://www.sitepoint.com/symbol-gc-ruby-2-2/)
 * **Incremental GC: ~2x faster** - Previously, that meant that Ruby would periodically go through all the objects in memory, mark the ones that were still fresh or being used, and then make a second pass to remove the unmarked objects from memory.
  The problem is that that GC sweep through memory takes some time, it can slow down your code while it's happening. Ruby 2.1 improved the speed of this process somewhat by classifying objects in memory based on the likelihood they would need to be garbage-collected. But a large collection could still slow things down. Well, now, in Ruby 2.2, we get incremental GC. And the basic idea is to break up the scanning and removal of objects so that the process happens incrementally, not all in one big sweep. So while the total work and the total time may still be the same, it's broken up among many smaller operations.
 * **Optimizes common operations** - The core team has optimized common operations, the code has fewer dependencies on other code in libraries, and there are fewer object allocations to memory. Now, that may seem like a small point that doesn't make much difference, but, as one example, link and URL generation in Ruby on Rails 5 is 44 percent faster.
