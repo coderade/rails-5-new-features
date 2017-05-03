@@ -19,3 +19,36 @@ In addition, it will show the features that are being deprecated or completely r
 * Fewer dependencies
 * Fewer object allocations
 * **Development environment is faster** - The development environment uses the Puma web server now, instead of using WEBrick, and development mode used to check the modification time of all of your files in your project to know if anything had changed, so that it could automatically reload the development environment for you. But now, there is a file system monitor, which notifies Rails whenever something changes. There is no more requirement to check the modification times of all the files. And that makes development feel snappier when you are working. And on top of these performance improvements.
+
+
+## Major features
+
+### Action Cable and Websockets
+
+* Framework for working with Websockets.
+* Allows real-time features using a constant connection between server and clients.
+* Comprised of server-side Ruby and client-side Javascript
+* Uses Redis pubsub to track communications
+
+#### Uses for Action Cable
+
+* Streaming content such as video
+* Interactive content such as online games, or any similar application where you're swapping mini messages per second between the client and the server
+* Realtime communications such as chat
+
+#### Differences between the HTTP Model and the Action Cable 
+
+##### HTTP Model
+
+* Data exchanged is independent of connection (each time a communication needs to happen, a new connection is created)
+* Wrapped data: request headers + data
+* Headers can 1-2KB large (even if the data is tiny) - includes things like cookies, that the browser has stored. Even if the data is tiny, it still has to wrap it in these headers, and the server overhead goes both ways.
+* Independence comes at cost of overhead
+* Request-response cycle communication
+
+##### WebSockets Model
+
+* Data exchanged is dependent on connection
+* Headers sent only at the start -  we don't have to have that same amount of overhead every time we swap a message back and forth.
+* Only data sent afterwards
+* Dependence allows significantl
