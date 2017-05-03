@@ -51,4 +51,24 @@ In addition, it will show the features that are being deprecated or completely r
 * Data exchanged is dependent on connection
 * Headers sent only at the start -  we don't have to have that same amount of overhead every time we swap a message back and forth.
 * Only data sent afterwards
-* Dependence allows significantl
+* Dependence allows significantly less overhead
+* Full-duplex communication - Instead of having this request response cycle that takes place with the HTTP model, now with WebSockets, we can exchange information back and forth and we can swap information back and forth at the same time, because the connection is open, the client can send information to the server at the same time as the server is sending information back to the client,
+
+
+#### Why WebSockets?
+
+* Less data overhead
+* Faster
+* Realtime
+* Full Duplex
+
+#### Why Not WebSockets?
+
+* Monopolizes a serve connection - No one else can talk to the server across that connection while it's in use
+* Even when nothing much is happening and a lot of data's not being sent
+* HTTP request-response cycle can serve more clients - So when I make a request for a webpage. The server sends me the webpage, and then while I'm reading the webpage and deciding what I want my next decision to be, my next request to the server, it can go ahead and serve other clients in the meantime.
+* No page caching - Different of the HTTP requests, with something like a webpage, that can be cached and sent very quickly back to the client. With WebSockets we have to dynamically respond all the time, and in fact, most applications just simply
+* Most applications do not require realtime communication
+
+
+With WebSockets we have to dynamically respond all the time, and in fact, most applications just simply do not require real-time communication, so ActionCable and WebSockets is a great solution for people who need real-time communication, but if you don't need it then you're probably better going off with a more traditional HTTP model.
