@@ -196,7 +196,7 @@ Now this is a very simple example. Meant to just give you the flow of how things
 
 Another major feature of Ruby on Rails 5, is ActionController Renderer. ActionController Renderer, allows us to render templates, but to do it independently of our controllers. It's particularly useful for things like ActionCable. We can render bits of content, that we broadcast to all our subscribers, and we don't have to load up all of the action controller code, with parts that we don't need. Like cookies and redirects. We can just use the rendering feature on its own.
 
-##### Examples
+#### Examples
 
 The way that you use it, is very straight forward. It's just like you would render inside a controller, so instead of just calling render, we now call `ApplicationController.render`, and then tell render what we wanna render.
 
@@ -272,4 +272,4 @@ Overall, rendering works pretty much the same way that it does inside our contro
 
 We could do it inside our jobs, our mailers, inside our rake tasks. There's all sorts of places that rendering can now take place without having to have all that controller code loaded in.
 
-For more information about Renderers see the Ruby `ActionController::Renderer`[documentation](http://api.rubyonrails.org/classes/ActionController/Renderer.html)
+For more information about Renderers see the Ruby `ActionController::Renderer`[documentation](http://api.rubyonrails.org/classes/ActionController/Renderer.html).
