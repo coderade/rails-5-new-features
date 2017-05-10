@@ -72,3 +72,115 @@ In addition, it will show the features that are being deprecated or completely r
 
 
 With WebSockets we have to dynamically respond all the time, and in fact, most applications just simply do not require real-time communication, so ActionCable and WebSockets is a great solution for people who need real-time communication, but if you don't need it then you're probably better going off with a more traditional HTTP model.
+
+#### Using ActionCable
+
+##### ActionCable Terminology
+
+* Cable -  single connection between a server and a client That's one single client, so when we open a connection between them, we call that a cable.
+* Channel - stream of data to which clients ca subscribe
+* Subscriptions: a client's currently subscribed channels
+* Broadcast: message sent on channel to subscribed clients
+
+##### Example
+
+If we wanna use ActionCable, the first thing that we need to do is make sure that it's enabled in our routes, so in your routes file, you wanna make sure that the line that says mount `ActionCable.server` is uncommented and available for you to use. You must include this if you wanna have ActionCable.
+
+By default it's going to point to the URL/cable, but you can configure that to something different if you'd like. This is the route that we're going to use for communication with ActionCable.
+
+```ruby
+# config/routes.rb
+Rails.application.routes.draw do
+    # ...
+    
+    mount ActionCable.server => "/cable"
+
+end    
+```
+
+Next, we're gonna need to create our channel, and a new Rails 5 app should have a directory for channels where you can put this code, and you're gonna create channels in much the same way that you normally create controllers, so while they're not exactly the same, you'll find that they are similar, so here you can see I've got a class defined for `ChatRoomChannel` that inherits from `ApplicationCable Channel`, and then you can see that I have a subscribed action, and a speak action.
+
+```ruby
+# app/channels/chat_room_channel.rb
+class ChatRoomChannel < ApplicationCable::Channel
+    
+    def subscribed
+        stream_from('chat_room_channel')
+    end
+
+    def speak(data)
+        ActionCable.server.broadcast('chat_room_channel',
+          :message => data['message'])
+    end
+
+end    
+``` 
+
+There will usually be an unsubscribed action as well. Subscribed and Unsubscribed are the two standard actions. These two actions do whatever code you want to do whenever a user subscribes or unsubscribes from a channel. Often what you wanna do when they're subscribing is to start streaming data to them across the channel, and you can see that that's what I'm doing in my subscribe method when I'm calling stream from. Now, speak is a custom action of my own creation. Here I've added just a basic example. When the speak action is called, then the ActionCable server is going to broadcast a message on the chat room channel, and you can see that I'm passing in whatever I want that data to be.
+
+Anyone that's streaming from that channel anyone who's subscribed, will be sent that message immediately. Once we have our chat room channel set up, and we have subscribed, unsubscribed and any of the custom actions that we wanna have inside there. 
+
+Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so. Here you see I have variable for App, and then I'm setting App.cable equal to `ActionCable.createConsumer`. This gives our JavaScript object all the features that it needs to communicate with the server.
+
+```javascript
+// app/assets/javascripts/cable.js
+//= require action_cable
+//= require_self
+//= require_tree ./channels
+ 
+(function() {
+  this.App || (this.App = {});
+ 
+  App.cable = ActionCable.createConsumer();
+}).call(this);
+``` 
+
+Once we have it set up, we can use it to set up a room on our app object, which creates a new subscription to the chat room channel. Here you can see I'm setting `App.room` equal to `App.cable` subscriptions create, so I'm creating a new subscription and I'm assigning it to room. I'm gonna call it `ChatRoomChannel`, and inside you'll see that I'm defining a number of functions. I've got functions for connected, disconnected, received, and speak.
+
+```javascript
+
+//app/assets/javascripts/cable/subscriptions/chat.coffee
+//Subscription JS
+App.room = App.cable.subscriptions.create(
+    "ChatRoomChannel", {
+        connected: function(data) { },
+        disconnected: function(data) { },
+        received: function(data) {
+            alert(data['message']);
+        }
+        speak: function(message) {
+            this.perform('speak', {message: message});
+        }
+    }
+);
+``` 
+**connected**, **disconnected** and **received** are standard functions in `ActionCable` that you'll probably always want to have. Whenever I'm connected, the JavaScript in connected function will execute. Whenever I'm disconnected, the JavaScript in the disconnected function will execute, and the received will gets called anytime data is received from this channel. 
+
+In the above example, in my received function. I'm just calling a simple JavaScript alert to display whatever message is received. You could instead replace data on the page, or add the data to some existing content. For example, if this was a real chat room, you'd probably want to append the message received to the end of the things that already been said in the chat room.
+
+Now, speak is a custom function of our own creation. It can be called anything we like, but notice that what it does, is it calls perform speak. This is how we call the controller action speak that we created earlier. We send it data, and that's the message that we wanna speak. Remember, that action just broadcast our message to anyone who subscribed to this same channel.
+
+Now that we've defined all of our Ruby actions on the server side, and all of our JavaScript functions on the client side. 
+
+In order to use it, we just have JavaScript call our speak function, like so, so we call `App.room.speak`, anywhere in our code. We provided the message, and then it goes through the code that we want. 
+
+```javascript
+
+//app/assets/javascripts/communication.coffee
+//Communication JS
+
+
+App.room.speak('Hello ActionCable');
+//Calls this.perform('speak');
+//Calls ChatRoomChannel#speak
+//Calls ActionCable.server.broadcast
+
+//Message goes to the streamed WebSocket
+//Triggers App.room.received on all subscribers
+``` 
+
+Let's review what the above code looks like. It calls this perform speak, and it passes along our message That then in turn calls `ChatRoomChannel` speak. Which in turn calls `ActionCable` server broadcast, and that sends our message out to that channel, and anyone who subscribed to it is going to get it.
+
+It's gonna be streamed to that WebSocket. Once that's received by the client, it's gonna trigger `App.room.received` on all the subscribers. Which in turn calls alert and alerts with our message, so that we see what the message was.
+
+Now this is a very simple example. Meant to just give you the flow of how things work. There's a lot more that you can do, and a lot of configurations to help you to do them. If you wanna experiment or learn more, a great resource is the rails actionCable examples that are on [github](https://github.com/rails/actioncable-examples) and official Action Cable [Docs](http://guides.rubyonrails.org/action_cable_overview.html).
