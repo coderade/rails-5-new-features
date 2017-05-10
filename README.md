@@ -183,7 +183,7 @@ Let's review what the above code looks like. It calls this perform speak, and it
 
 It's gonna be streamed to that WebSocket. Once that's received by the client, it's gonna trigger `App.room.received` on all the subscribers. Which in turn calls alert and alerts with our message, so that we see what the message was.
 
-Now this is a very simple example. Meant to just give you the flow of how things work. There's a lot more that you can do, and a lot of configurations to help you to do them. If you wanna experiment or learn more, a great resource is the rails actionCable examples that are on [github](https://github.com/rails/actioncable-examples) and official Action Cable [Docs](http://guides.rubyonrails.org/action_cable_overview.html).
+Now this is a very simple example. Meant to just give you the flow of how things work. There's a lot more that you can do, and a lot of configurations to help you to do them. If you wanna experiment or learn more, a great resource is the rails actionCable examples that are on [github](https://github.com/rails/actioncable-examples) and official Action Cable [documentation](http://guides.rubyonrails.org/action_cable_overview.html).
 
 
 
@@ -260,7 +260,7 @@ You can see that in the first blank I have an instance variable for version, and
 
 
 ```ruby
-ApplicationController.render(
+(
     
     :inline => "I think Ruby on Rails version <% @version %> is <% adjective %>!",
 
@@ -271,3 +271,5 @@ ApplicationController.render(
 Overall, rendering works pretty much the same way that it does inside our controllers. What's different in Rails 5, is the fact that we've gained the ability to do this rendering outside of controllers. We don't need a controller in order to render code. We can do it inside our channels.
 
 We could do it inside our jobs, our mailers, inside our rake tasks. There's all sorts of places that rendering can now take place without having to have all that controller code loaded in.
+
+For more information about Renderers see the Ruby `ActionController::Renderer`[documentation](http://api.rubyonrails.org/classes/ActionController/Renderer.html)
