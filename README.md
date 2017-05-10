@@ -184,3 +184,90 @@ Let's review what the above code looks like. It calls this perform speak, and it
 It's gonna be streamed to that WebSocket. Once that's received by the client, it's gonna trigger `App.room.received` on all the subscribers. Which in turn calls alert and alerts with our message, so that we see what the message was.
 
 Now this is a very simple example. Meant to just give you the flow of how things work. There's a lot more that you can do, and a lot of configurations to help you to do them. If you wanna experiment or learn more, a great resource is the rails actionCable examples that are on [github](https://github.com/rails/actioncable-examples) and official Action Cable [Docs](http://guides.rubyonrails.org/action_cable_overview.html).
+
+
+
+### ActionController::Renderer
+
+* Render templates independently of controllers.
+* Useful for ActionCable
+
+#### Overview
+
+Another major feature of Ruby on Rails 5, is ActionController Renderer. ActionController Renderer, allows us to render templates, but to do it independently of our controllers. It's particularly useful for things like ActionCable. We can render bits of content, that we broadcast to all our subscribers, and we don't have to load up all of the action controller code, with parts that we don't need. Like cookies and redirects. We can just use the rendering feature on its own.
+
+##### Examples
+
+The way that you use it, is very straight forward. It's just like you would render inside a controller, so instead of just calling render, we now call `ApplicationController.render`, and then tell render what we wanna render.
+
+On the bellow sample a template called products/index will be rendered, and it's gonna look for that template in its normal place. It's gonna look for it in the views directory, inside the products directory. It's gonna look for a template called index.
+
+```ruby
+ApplicationController.render(
+    :template => 'products/index'
+)
+```    
+
+You can also use the shorthand form for this, that you're probably more familiar with, and that is just to call ApplicationController.render, and then the template name that we want.
+
+```ruby
+ApplicationController.render('products/index')
+```
+
+Another nice shorthand, is that if instead of calling render on ApplicationController, we call it on one of our custom controllers, which inherits from ApplicationController. Then we don't even have to provide the directory for where to find the template. It knows that it's going to look in the products directory, because we're working with the ProductsController, so that's where it's going to look, by default, for this index template, and just like our controllers, we don't have to just render html.
+
+```ruby
+ProductsController.render('index')
+```
+
+We can render json, for example. If we wanted to provide json back as a snippet, to action cable, we can do that just like this:
+
+```ruby
+ApplicationController.render(
+    :json => Product.all
+)
+```
+
+The other possibilities for things you can render are templates, actions, partials, file, inline, plain, text, html, json, js, and xml.
+
+Just like you're used to having in your controllers. You can pass local variables to the templates. Just like you normally would. Here you see an example where I'm rendering a partial, for products_product, and I'm providing local variable values for product and for user. 
+
+```ruby
+ApplicationController.render(
+    :partials => `products/_product`,
+    :locals => {
+        :product => Product.first,
+        :user => current_user
+    }
+)
+``` 
+
+There's only one thing that's slightly tricky about this, and that is, that in your controller, it's common practice to set up instance variables, which are then automatically going to be bound to the ERB template that we render, so that they're available for use inside that template.
+
+That binding doesn't happen automatically with renderer, but render lets us pass instance variables for binding to the template, using assigns, so on the below example, you can see that I'm passing in both locals and assigns. This would mean that inside that partial, I would be expecting product to be a local variable, and user would be an instance variable.
+
+```ruby
+ApplicationController.render(
+    :partials => `products/_product`,
+    :locals => { :product => Product.first },
+    :assigns => { :user => @user }
+)
+``` 
+
+In case the difference between assigns and locals is not completely clear, here's another example that shows them both being applied to the rendering of a bit of inline ERB, so my template is that inline ERB.
+
+You can see that in the first blank I have an instance variable for version, and a local variable then in the second blank for adjective, so I'm using assigns to set the instance variable. I'm using locals to set the local variable. 
+
+
+```ruby
+ApplicationController.render(
+    
+    :inline => "I think Ruby on Rails version <% @version %> is <% adjective %>!",
+
+    :assigns => { :adjective => 'sweet' }
+    :locals => { :version => 5 },
+)
+``` 
+Overall, rendering works pretty much the same way that it does inside our controllers. What's different in Rails 5, is the fact that we've gained the ability to do this rendering outside of controllers. We don't need a controller in order to render code. We can do it inside our channels.
+
+We could do it inside our jobs, our mailers, inside our rake tasks. There's all sorts of places that rendering can now take place without having to have all that controller code loaded in.
