@@ -296,7 +296,7 @@ You should note that it is possible to have an existing Rails application which 
 * Development and test environments -The test is an important aspect too, so we can continue to write test for our application in a way that we're used to do our Rails apps.
 
 
-#### How do we user it?
+#### How do we use it?
 
 To create a Rails API application, all you need to do when you create a new Rails app is to add the dash dash api option to the end. As the following command:
 
@@ -506,3 +506,116 @@ Turbolinks.visit('/comments', :flush => true)
 ``` 
 
 Change, keep, flush, as well we can use append and prepend, and those do the exact same thing. If you wanna find out more about Turbolinks. Learn more about some of the configuration options that are available to you. You can find out more about it at the turbolinks official [repository](https://github.com/turbolinks/turbolinks).
+
+
+### ActiveRecord Attributes API
+
+Another major feature of Ruby on Rails 5, is the ActiveRecord Attributes API, that can not be confused in any way with the Rails as a JSON API we wrote above on this doc. This is different, this is about working with ActiveRecord Attributes in our models. 
+
+In our models, ActiveRecord automatically detects attribute types from the underlying database - for example, if our database has a varchar type for a column, then it sees that as being a string. If it sees an int type, it sees that it's being an integer a decimal becomes a float, a tinyint becomes a boolean, and a date time becomes date time.
+
+What the attributes API does is it gives us a standard way to override the type detection and other defaults that are built into Rails, and the way we do it is with a new method called attribute, so we have attribute and we pass in three different arguments:
+
+```ruby
+attribute(name, cast_type, options)
+```
+The first is the name of the attribute. The second is the cast type, and the third is any options that we want to provide.
+
+For example. Let's say that we create a new table in our database called fabrics, and in that table I'm adding a new column which is gonna be a decimal column called quantity.
+
+```ruby
+create_table :fabrics do |t|
+    t.decimal :quantity
+end    
+``` 
+
+That would normally give me a floatback when I access it as an attribute in my fabric class, but when I tell it to use integer instead.
+
+```ruby
+class Fabric < ApplicationRecord
+    attribute(:quantity, :integer)
+end    
+``` 
+
+Now will always give me an integer and never a float, so you can see that example below, when I then call `fabric = Fabric.new`.
+
+```ruby
+fabric = Fabric.new(:quantity => 3.9)
+
+fabric.quantity.integer? 
+# => true
+
+fabric.quantity 
+# => 3 
+``` 
+
+I provided a float but instead `fabric.quantity` is now going to be cast as an integer, and when I ask it for its value, the value is three. Not 3.9, because it converted it from a float into an integer.
+
+It can also override the default values that are set in the database, so for example, if I have my fabrics database and I have a sting column called name, and it has a default database value of database default, so the database is going to want to set that value. 
+
+```ruby
+create_table :fabrics do |t|
+    t.string :name, :default => 'Database default'
+end    
+``` 
+
+By default Rails is gonna pick up that same default value, but if I instead tell the attribute that it'll have a different default, then I can override whatever is there.
+
+```ruby
+class Fabric < ApplicationRecord
+    attribute(:name, :string, :default => 'New default')
+end    
+``` 
+
+So now when I call `fabric = Fabric.new`, and I call `fabric.name`, I get back New default, not database default anymore, and also these attributes do not need to be even backed by a database column.
+
+```ruby
+fabric = Fabric.new(:quantity => 3.9)
+
+fabric.name
+# => 'New default'
+``` 
+
+You can create your own attributes and define them in the same way, and affect how Rails will cast those values. You can also define your own types. Just make sure that the type you create implements all the methods that ActiveRecord type. 
+
+The easiest way to do that, is to inherit from an existing type or from ActiveRecord type value. Then you can override the parts that you want and call super, to let the parent class do the rest. The key methods to override are cast, serialize, and de-serialize.
+
+```ruby
+# inherit existing class or ActiveRecord::Type::String
+
+class BackwardsType < ActiveRecord::Type::String
+    def cast(value)
+        new_value = value.reverse
+        super(new_value)
+    end 
+end
+
+ActiveRecord::Type.register(:backwards, BackwardsType)
+``` 
+On the above example, I'm overriding cast so that it reverses any string that it's given before it puts it in the database. Once we create our type, we just need to register it. Calling ActiveRecord `type.register`. I'm gonna give it a name of backwards, so that's the name of my type. Instead of string, integer, and decimal.
+
+Now it's gonna have a type of backwards which will be my new class, so I can for example, create my table of users. I give it a string, I call it backwards name, and then I use my attributes API to set backwards name using the backwards type.
+
+```ruby
+create_table :users do |t|
+    t.string :backwards_name
+end  
+
+class User < ApplicationRecord
+    attribute(:backwards_name, :backwards)
+end
+```
+
+So, user = User.new backwards name "Coderade". and what is the value of backwards name? It's gone through my class, it's been typed in the way that I've told it. Which in this case, I told it to reverse the letters. 
+
+```ruby
+user = User.new(:backwards_name => 'Coderade')
+
+user.backwards_name
+# => 'edaredoC'
+```
+It's a little bit of a silly example, but I think it makes the point of how you can really do anything you want inside these class types. A more common use for writing your own type would be to write the serialization and de-serialization yourself, so for example, you might wanna be able to provide JSON to an attribute and then have that JSON be serialized in a certain way before being put into the database and the be de-serialized back to JSON when you pull it back out of the database.
+
+Rails gives a sensible default for our attributes. The ActiveRecord Attributes API gives us a way to override those defaults.
+ 
+You can find out more about the  ActiveRecord Attributes API at the your Rails documentation [page](http://api.rubyonrails.org/classes/ActiveRecord/Attributes/ClassMethods.html).
