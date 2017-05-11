@@ -619,3 +619,58 @@ It's a little bit of a silly example, but I think it makes the point of how you 
 Rails gives a sensible default for our attributes. The ActiveRecord Attributes API gives us a way to override those defaults.
  
 You can find out more about the  ActiveRecord Attributes API at the your Rails documentation [page](http://api.rubyonrails.org/classes/ActiveRecord/Attributes/ClassMethods.html).
+
+### ActiveRecord::Relation#or
+
+Ruby on Rails 5 adds a new method, which is ActiveRecord::Relation#or. This has been a long-requested feature, and it finally arrives in Rails 5.
+
+First, let's take a look at a query that uses two where clauses to reduce the results that are being returned using and. 
+
+```ruby
+Post.where("status = 'published'").
+    where("published_on = '2017-08-29'")
+```
+On the above example, I have post where status equals published and where published_on is 2017-08-29. Now I put the and in there, because that's what's really happening when we write the SQL.
+
+```sql
+SELECT * FROM posts WHERE (status = 'published') AND (published_on = '2017-08-29')
+
+-- Select all from posts where status equals published and published on equals the date that I've given it. 
+```
+
+Now daisy-chaining these kind of scopes together is common in Ruby on Rails, and it works well. But what about the case in which we don't want to scope them further by using and, but we want to broaden our scope by using **or**. In other words, where one thing is true or something else is true. This has always been a problem in Ruby on Rails. And up until the Rails 4, you either had to write the SQL yourself or used a third-party library to help you. 
+
+But starting on Ruby on Rails 5, we have new method with is or. 
+
+```ruby
+Post.where("status = 'published'").or(
+    Post.where("status = 'pending'")
+)
+```
+The way it works is like this; you can see I have post where status equals published, and then what I chain onto the end of that is OR.
+
+ The resulting SQL looks like this:
+ 
+```sql
+SELECT * FROM posts WHERE (status = 'published') OR (status = 'pending')
+ 
+-- Select all from posts where status equals published or status equal pending. 
+```
+
+The **or** method expects an active relation as an argument. Any active relation will do, so you can use scopes as well, and you can keep chaining them together as long as you always provide an active relation as the argument. Now this isn't going to work for complex queries, but it is going to be a big help in simple cases.
+
+```ruby
+Post.published.or(Post.pending)
+Post.published.or(Post.pending).or(Post.recent)
+```
+
+#### Guidelines
+
+There are some guidelines that you need to keep in mind, though.
+
+* First, the argument that you pass  Must be an `ActiveRecord::Relation` (query or scope) - That's why I had to use post dot where on the above example, again, because we needed to created a `ActiveRecord::Relation`
+* The arguments must be the same model - So if my exterior query has to do with post, then the thing that goes inside or should also be regarding Post. 
+* And the arguments must differ only by their `#where` or their `#having` clause - that's because that's what's going on under the hood. `ActiveRecord::Relation#or` is taking any where or having clause that we pass in on a scope, and it's appending them to the existing where and having clause using or.
+* Should not use `#limit`, `#offset`, or `#distinct` - you can still use limit, offset, and distinct on the exterior scope, but not on the relation that's being passed into or.
+
+If you keep these guidelines in mind, I think that you'll find that or provides a handy tool to our Active Relation query toolbox.
