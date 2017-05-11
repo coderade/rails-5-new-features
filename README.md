@@ -365,4 +365,144 @@ end
 
 We don't need them the same way that we don't need the actions that correspond to them. You can add them back if you decide you do. But they're not there by default. With Ruby on Rails 5, Rails developers who want to create backend applications where Rails serves as a JSON API will find it much easier than they have in the past. And it will also omit a lot of the application code that you don't need to make your application as lean and fast as possible.
 
-For more information of how use Rails for API-only Applications, see the [documentation](http://edgeguides.rubyonrails.org/api_app.html).
+For more information of how use Rails for API-only Applications, see the official [documentation](http://edgeguides.rubyonrails.org/api_app.html).
+
+
+### Turbolinks 5
+
+Turbolinks was first introduced in Ruby on Rails 4. This version of Turbolinks has now been renamed as [Turbolinks Classic](https://github.com/turbolinks/turbolinks-classic), and version five, which comes with Ruby on Rails 5, is a ground up rewrite with a new flow and new events, but which still uses the same core idea as Turbolinks Classic.
+The new version is faster than the old one, and also offers the ability to do partial replacements of webpages. We'll take a look at that feature in a moment.
+
+#### Why Turbolinks?
+
+* Performance of a single-page application - that's part of what JavaScript frameworks like to boast about
+* No client-side JavaScript framework required - you can work directly with HTML pages in your existing Rails application. 
+* Links do not load completely new pages
+* Fetch new content with Ajax; swap `<body>`; merge `<head>` - it fetches the page using asynchronous JavaScript, also known as Ajax, and then it takes the returned page and it replaces the body of the current page with the new body, and it merges the content of the page header with the existing page header. 
+* CSS and JS is retained (does not need to be reloaded or re-rendered)
+* Content is still full HTML page, not fragment or JSON
+* Current browser scroll position is maintained
+* Still changes browser's URL and history - the back button will work as expected
+* Much faster, can feel almost instantaneous (<1 second)
+
+
+#### Using Turbolinks
+
+* To use it, we need first to add the turbolinks to Gemfile: `gem 'turbolinks'`
+* Run the `bundle install` command
+* Add to JS manifest: `//= require turbolinks`
+
+You don't have to use Turbolinks all the time, you can have some links that opt out of it. 
+
+```html
+<a href="/some_url" data-turbolinks="false"> 
+    This link will not use Turbolinks
+</a>
+```
+
+As the above example, there I have a link that I've marked with `data-turbolinks=false`, and this now becomes a link that will not use Turbolinks when it loads. Otherwise, all your other links will automatically use Turbolinks, and you'll get that speed boost as a result.
+
+There is one gotcha when working with Turbolinks, and that is that it's very common for people to write JavaScript that either activates on loading the window or when the document is considered ready, and that's not going to be true with Turbolinks anymore, because our document and our window are already loaded.
+
+```javascript
+//Javascript
+window.onload = function(){
+    // ...
+}
+
+//jQuery
+$(document).ready(function(){
+    // ...
+});
+```
+
+All we're doing is swapping data into the existing document, so if you find that your JavaScript isn't firing anymore, then instead you wanna use the EventListener, turbolinks, load, and if you'd listen for turbolinks load, your JavaScript will fire again.
+
+```javascript
+//Javascript
+document.addEventListener('turbolinks:load',function(){
+    // ...
+})
+
+//jQuery
+$(document).on('turbolinks:load', function(){
+    // ...
+});
+```
+
+```javascript
+//Javascript
+window.onload = function(){
+    // ...
+}
+```
+
+The turbolinks load event fires once on the initial page load and then again after every turbolinks visit. 
+
+##### Turbolinks Partial Replacement
+
+The first version of Turbolinks simply replaced everything within the body when a link was clicked. That kept the HTML head, CSS and JavaScript, but the bulk of the page was still reloading, and you can continue to use Turbolinks in that way, and you'll get a big speed boost by not reloading that extra stuff, but the new version of Turbolinks that's in Ruby on Rails 5 has an additional feature.
+
+You can reload only parts of a page by marking content as either permanent, or as temporary. 
+
+Look the below example. Let's imagine we have a page, and inside the body I have three divs. One with an ID of nav, one with an ID of flash, and one with an ID of comments. You can see that I've marked the nav as being data turbolinks permanent. That means that this div is not going to change after the initial load by default. Then I've got div id flash marked data turbolinks temporary and that's going to be updated with every request unless I specifically ask it to stick around, and then I've got a normal div which I've just called comments, and that's typically going to change on each page load.
+
+```html
+<body>
+    <div id="nav" data-turbolinks-permanent>
+        <!-- will not change after the initial load -->
+    </div>
+
+    <div id="flash" data-turbolinks-temporary>
+        <!-- update with every request unless told to 'keep' -->
+    </div>
+    
+    <div id="comments">
+        <!-- changes on each page load or when targeted -->
+    </div>
+</body>
+```
+
+Using the content marked up appropriately let's switch over to the controller and see how some of the different rendering options affect those tags. 
+
+
+```ruby
+# Keep #nav, update all other parts of page
+render('comments/index')
+
+# Update #flash & #comments, keep #nav & other parts
+render('comments/index', :change => 'comments')
+
+# Keep #nav & #flash, update all other parts of page
+render('comments/index', :keep => 'flash')
+
+# Update everything, including #nav
+render('comments/index', :flush => true)
+``` 
+
+For the first example, if I just do a simple render. Let's say I render comments/index, it's going to keep the nav div around. It's not going to make any changes to it. It will leave it in place because I've marked it permanent. It's gonna update all the other parts of the page.
+
+In the second example, I've specifically targeted comments by using change. You can also use append and prepend in the same way, so I'm targeting comments, therefore it's going to update the flash and the comments.
+It updates the comments because I targeted it. It updates the flash because I marked that it's being temporary, so it's still going to be refreshed each and every time, but the nav and all other parts of the page. Any other content on the page is left alone. 
+
+Like the third example, if I instead tell it to keep the flash, well then the flash will stay around, so now in the third example you'll see that it's gonna keep the nav, because I've marked it permanent. It's going to keep the flash, because I've explicitly asked it to, but all other parts of the page are gonna be updated.
+
+On the Last example, you can see that I'm updating everything including the nav by using flush true. This is still using Turbolinks. It's not opting out of Turbolinks, it's just telling it that all the parts of the page should be replaced. The entire body gets replaced in that case.
+
+The below example show hoW the things are done inside your controller. You can also do the same thing in your JavaScript. This is essentially what's happening under the hood. When Ajax makes this call. That is that we're calling `Turbolinks.visit` comments, and then we can provide any of those options we just saw.
+
+```ruby
+# Keep #nav, update all other parts of page
+Turbolinks.visit('/comments')
+
+# Update #flash & #comments, keep #nav & other parts
+Turbolinks.visit('/comments', :change => 'comments')
+
+# Keep #nav & #flash, update all other parts of page
+Turbolinks.visit('/comments', :keep => 'flash')
+
+# Update everything, including #nav
+Turbolinks.visit('/comments', :flush => true)
+``` 
+
+Change, keep, flush, as well we can use append and prepend, and those do the exact same thing. If you wanna find out more about Turbolinks. Learn more about some of the configuration options that are available to you. You can find out more about it at the turbolinks official [repository](https://github.com/turbolinks/turbolinks).
