@@ -2,7 +2,42 @@
 
 This project show the new features, improvements and other important changes to Ruby on Rails version 5. It will shows how to use the most important features of Rails 5, including action cable, action controller renderer, turbolinks, the active records, attributes API, and how to use Rails exclusively as a Json API. And will discuss too the many other smaller changes in improvements such as the Rails command router, new date and time methods, secure tokens, and changes to parameters.
 
-In addition, it will show the features that are being deprecated or completely removed. This is an important topic if you have an existing project that uses any of these features. 
+In addition, it will show the features that are being deprecated or completely removed. This is an important topic if you have an existing project that uses any of these features.
+
+
+## Table of contents
+
+<!-- TOC -->
+
+- [Rails 5 new features](#rails-5-new-features)
+    - [Table of contents](#table-of-contents)
+    - [About Ruby on Rails 5](#about-ruby-on-rails-5)
+    - [Major features](#major-features)
+        - [Action Cable and Websockets](#action-cable-and-websockets)
+            - [Uses for Action Cable](#uses-for-action-cable)
+            - [Differences between the HTTP Model and the Action Cable](#differences-between-the-http-model-and-the-action-cable)
+                - [HTTP Model](#http-model)
+                - [WebSockets Model](#websockets-model)
+            - [Why WebSockets?](#why-websockets)
+            - [Why Not WebSockets?](#why-not-websockets)
+            - [Using ActionCable](#using-actioncable)
+                - [ActionCable Terminology](#actioncable-terminology)
+                - [Example](#example)
+        - [ActionController::Renderer](#actioncontrollerrenderer)
+            - [Overview](#overview)
+            - [Examples](#examples)
+        - [Rails as JSON API](#rails-as-json-api)
+            - [Why Rails as JSON API?](#why-rails-as-json-api)
+            - [How do we use it?](#how-do-we-use-it)
+        - [Turbolinks 5](#turbolinks-5)
+            - [Why Turbolinks?](#why-turbolinks)
+            - [Using Turbolinks](#using-turbolinks)
+                - [Turbolinks Partial Replacement](#turbolinks-partial-replacement)
+        - [ActiveRecord Attributes API](#activerecord-attributes-api)
+        - [ActiveRecord::Relation#or](#activerecordrelationor)
+            - [Guidelines](#guidelines)
+
+<!-- /TOC -->
 
 
 ## About Ruby on Rails 5
