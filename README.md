@@ -7,40 +7,36 @@ In addition, it will show the features that are being deprecated or completely r
 
 ## Table of contents
 
-<!-- TOC -->
+- [About Ruby on Rails 5](#about-ruby-on-rails-5)
+- [Major features](#major-features)
+    - [Action Cable and Websockets](#action-cable-and-websockets)
+        - [Uses for Action Cable](#uses-for-action-cable)
+        - [Differences between the HTTP Model and the Action Cable](#differences-between-the-http-model-and-the-action-cable)
+            - [HTTP Model](#http-model)
+            - [WebSockets Model](#websockets-model)
+        - [Why WebSockets?](#why-websockets)
+        - [Why Not WebSockets?](#why-not-websockets)
+        - [Using ActionCable](#using-actioncable)
+            - [ActionCable Terminology](#actioncable-terminology)
+            - [Example](#example)
+    - [ActionController::Renderer](#actioncontrollerrenderer)
+        - [Overview](#overview)
+        - [Examples](#examples)
+    - [Rails as JSON API](#rails-as-json-api)
+        - [Why Rails as JSON API?](#why-rails-as-json-api)
+        - [How do we use it?](#how-do-we-use-it)
+    - [Turbolinks 5](#turbolinks-5)
+        - [Why Turbolinks?](#why-turbolinks)
+        - [Using Turbolinks](#using-turbolinks)
+            - [Turbolinks Partial Replacement](#turbolinks-partial-replacement)
+    - [ActiveRecord Attributes API](#activerecord-attributes-api)
+    - [ActiveRecord::Relation#or](#activerecordrelationor)
+        - [Guidelines](#guidelines)
+- [Improvements](#improvements)
+    - [Rails Command router](#rails-command-router)
+    - [Application Record and Application Job](#application-record-and-application-job) 
+    - [Integer methods: #positive? and #negative?](#integer-methods-positive-and-negative)
 
-- [Rails 5 new features](#rails-5-new-features)
-    - [Table of contents](#table-of-contents)
-    - [About Ruby on Rails 5](#about-ruby-on-rails-5)
-    - [Major features](#major-features)
-        - [Action Cable and Websockets](#action-cable-and-websockets)
-            - [Uses for Action Cable](#uses-for-action-cable)
-            - [Differences between the HTTP Model and the Action Cable](#differences-between-the-http-model-and-the-action-cable)
-                - [HTTP Model](#http-model)
-                - [WebSockets Model](#websockets-model)
-            - [Why WebSockets?](#why-websockets)
-            - [Why Not WebSockets?](#why-not-websockets)
-            - [Using ActionCable](#using-actioncable)
-                - [ActionCable Terminology](#actioncable-terminology)
-                - [Example](#example)
-        - [ActionController::Renderer](#actioncontrollerrenderer)
-            - [Overview](#overview)
-            - [Examples](#examples)
-        - [Rails as JSON API](#rails-as-json-api)
-            - [Why Rails as JSON API?](#why-rails-as-json-api)
-            - [How do we use it?](#how-do-we-use-it)
-        - [Turbolinks 5](#turbolinks-5)
-            - [Why Turbolinks?](#why-turbolinks)
-            - [Using Turbolinks](#using-turbolinks)
-                - [Turbolinks Partial Replacement](#turbolinks-partial-replacement)
-        - [ActiveRecord Attributes API](#activerecord-attributes-api)
-        - [ActiveRecord::Relation#or](#activerecordrelationor)
-            - [Guidelines](#guidelines)
-    - [Improvements](#improvements)
-        - [Rails Command router](#rails-command-router)
-    - [Application Record and Application Job](#application-record-and-application-job)
-
-<!-- /TOC -->
 
 
 ## About Ruby on Rails 5
@@ -745,7 +741,7 @@ What Rails is going to do under the hood is that it checks for those key Rails s
 You're just not going to access these scripts from the command line anymore, instead you want to use Rails for that. This change may feel odd during the transition, but over the long term this is a change for the better.
 
 
-## Application Record and Application Job
+### Application Record and Application Job
 
 Ruby on Rails 5 adds a couple of new classes to the framework to help us out, `ApplicationRecord` and `ApplicationJob`. They are customizable super classes for all of your models and your jobs. These classes are very similar to the way `ApplicationController` and `ApplicationHelper` work, we put all the code that's common to our records and our models in ApplicationRecord and anything that's common to our jobs should go in ApplicationJob, that allows us to keep from overriding the base classes directly.
 
@@ -828,4 +824,32 @@ end
 The same thing is true for ApplicationJob and the desire to keep a pristine version of ActiveJob Base around. So while it may seem like the Rails framework has just thrown a couple of extra files into a default application, they're there for a good reason and I encourage you to use them.
 
 
+### Integer methods: #positive? and #negative?
 
+Another improvement in Ruby on Rails five is the addition of two new methods on the integer class. `positive` and `negative` and they work exactly as you'd expect. 
+
+When we call positive question mark or negative question on an integer, they return either true or false, `1` would be considered positive, `-1` would be considered negative and `0` is considered neither positive nor negative, as you can see those below results:
+
+```ruby
+1.positive?
+# true
+
+0.positive?
+# false
+
+-1.positive?
+# false
+
+1.negative?
+# false
+
+0.negative?
+# false
+
+-1.negative?
+# true
+```
+
+While these are two very useful methods, they are also going to be a superfluous part of Rails soon, and that's because these methods are built-in methods in Ruby 2.3 which was released in December of 2015. 
+
+So really what Rails is doing here is just offering these methods early for Ruby 2.2 users and if you remember that's the base requirement for using Ruby on Rails five is Ruby 2.2.2, so if you meet that requirement you still have access to these methods and if you use Ruby 2.3 then those are going to be built-in methods for you.
