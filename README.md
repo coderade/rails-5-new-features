@@ -155,7 +155,7 @@ There will usually be an unsubscribed action as well, subscribed and unsubscribe
 
 Anyone that's streaming from that channel anyone who's subscribed, will be sent that message immediately, once that we have our chat room channel set up, and we have subscribed, unsubscribed and any of the custom actions that we wanna have inside there. 
 
-Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so, on the bellow example you see I have variable for App, and then I'm setting `App.cable` equal to `ActionCable.createConsumer`. This gives our JavaScript object all the features that it needs to communicate with the server.
+Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so, on the bellow example you see I have variable for App, and then I'm setting `App.cable` equal to `ActionCable.createConsumer`, this gives our JavaScript object all the features that it needs to communicate with the server.
 
 ```javascript
 // app/assets/javascripts/cable.js
@@ -189,13 +189,13 @@ App.room = App.cable.subscriptions.create(
     }
 );
 ``` 
-**connected**, **disconnected** and **received** are standard functions in `ActionCable` that you'll probably always want to have. Whenever I'm connected, the JavaScript in connected function will execute. Whenever I'm disconnected, the JavaScript in the disconnected function will execute, and the received will gets called anytime data is received from this channel. 
+**connected**, **disconnected** and **received** are standard functions in `ActionCable` that you'll probably always want to have. Whenever I'm connected, the JavaScript code in the connected function will execute, whenever I'm disconnected the code in the disconnected function will execute, and the received will gets called anytime data is received from this channel. 
 
-In the above example, in my received function. I'm just calling a simple JavaScript alert to display whatever message is received. You could instead replace data on the page, or add the data to some existing content. For example, if this was a real chat room, you'd probably want to append the message received to the end of the things that already been said in the chat room.
+In the above example, in my received function I'm just calling a simple JavaScript alert to display whatever message is received. You could instead replace data on the page, or add the data to some existing content, for example, if this was a real chat room, you'd probably want to append the message received to the end of the things that already been said in the chat room.
 
-Now, speak is a custom function of our own creation. It can be called anything we like, but notice that what it does, is it calls perform speak. This is how we call the controller action speak that we created earlier. We send it data, and that's the message that we wanna speak. Remember, that action just broadcast our message to anyone who subscribed to this same channel.
+The Speak is a custom function of our own creation, it can be called anything we like, but notice that what it does, is it calls perform speak. This is how we call the controller action speak that we created earlier, send it data, and that's the message that we wanna speak. Remember, that action just broadcast our message to anyone who subscribed to this same channel.
 
-Now that we've defined all of our Ruby actions on the server side, and all of our JavaScript functions on the client side. 
+Now we've defined all of our Ruby actions on the server side and all of our JavaScript functions on the client side. 
 
 In order to use it, we just have JavaScript call our speak function, like so, so we call `App.room.speak`, anywhere in our code. We provided the message, and then it goes through the code that we want. 
 
