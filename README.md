@@ -36,6 +36,8 @@ In addition, it will show the features that are being deprecated or completely r
         - [ActiveRecord Attributes API](#activerecord-attributes-api)
         - [ActiveRecord::Relation#or](#activerecordrelationor)
             - [Guidelines](#guidelines)
+    - [Improvements](#improvements)
+        - [Rails Command router](#rails-command-router)
 
 <!-- /TOC -->
 
@@ -709,3 +711,18 @@ There are some guidelines that you need to keep in mind, though.
 * Should not use `#limit`, `#offset`, or `#distinct` - you can still use limit, offset, and distinct on the exterior scope, but not on the relation that's being passed into or.
 
 If you keep these guidelines in mind, I think that you'll find that or provides a handy tool to our Active Relation query toolbox.
+
+
+## Improvements
+
+### Rails Command router
+
+One of the most noticeable improvements in Ruby on Rails 5 are the changes that have been made to the Rails Command Router. When working with Ruby on Rails 5, from the command line we typically issue one of two kinds of commands, either `rake` or `rails`. So, for example, we do `rake db:migrate`, `rake test`, `rake spec`, or even custom Rake tasks, and then we have `rails new`, `rails generate`, `rails server`, `rails console` and many others. The problem is that these are inconsistent in the way that they are used and the code is even maintained in different directories.
+
+This becomes especially confusing for beginners who are trying to remember when do I use Rake and when do I use Rails and they don't really care about the technical differences between the two, they just want a consistent way to interact with the application. 
+
+So starting in Version 5, we're going to use Rails for everything, now it's going to feel odd to veterans of Ruby on Rails because we've typed `rake db:migrate` so much. It's going to take some getting used to to type `rails db:migrate`, but that's what's it's going to be. You're going to use Rails to run all of the old Rake tests.
+
+What Rails is going to do under the hood is that it checks for those key Rails scripts, so `new`, `generate`, `console`, `server` and etc. and then, if what you're asking for isn't one of those key scripts, then it's going to send anything else on to Rake and let Rake look for it, so that means that any of the existing Rake tasks, any custom Rake tasks that you have, and third-party library Rake tasks, those are all going to use Rails, because Rails will just send them on to Rake. So that means that Rake tasks do still exist, you can still write them, and then can even still be used as dependencies.
+
+You're just not going to access these scripts from the command line anymore, instead you want to use Rails for that. This change may feel odd during the transition, but over the long term this is a change for the better.
