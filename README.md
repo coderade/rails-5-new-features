@@ -38,6 +38,7 @@ In addition, it will show the features that are being deprecated or completely r
             - [Guidelines](#guidelines)
     - [Improvements](#improvements)
         - [Rails Command router](#rails-command-router)
+    - [Application Record and Application Job](#application-record-and-application-job)
 
 <!-- /TOC -->
 
@@ -726,3 +727,89 @@ So starting in Version 5, we're going to use Rails for everything, now it's goin
 What Rails is going to do under the hood is that it checks for those key Rails scripts, so `new`, `generate`, `console`, `server` and etc. and then, if what you're asking for isn't one of those key scripts, then it's going to send anything else on to Rake and let Rake look for it, so that means that any of the existing Rake tasks, any custom Rake tasks that you have, and third-party library Rake tasks, those are all going to use Rails, because Rails will just send them on to Rake. So that means that Rake tasks do still exist, you can still write them, and then can even still be used as dependencies.
 
 You're just not going to access these scripts from the command line anymore, instead you want to use Rails for that. This change may feel odd during the transition, but over the long term this is a change for the better.
+
+
+## Application Record and Application Job
+
+Ruby on Rails 5 adds a couple of new classes to the framework to help us out, `ApplicationRecord` and `ApplicationJob`. They are customizable super classes for all of your models and your jobs. These classes are very similar to the way `ApplicationController` and `ApplicationHelper` work, we put all the code that's common to our records and our models in ApplicationRecord and anything that's common to our jobs should go in ApplicationJob, that allows us to keep from overriding the base classes directly.
+
+The files for ApplicationRecord and ApplicationJob are going to be created by default in a new Rails 5 project, but they're not required to exist, they're really just there as part of the framework to help you out in the same way that you could do away with ApplicationController and everything would still work just fine.
+
+
+In a new Rails 5 project it will create a file in app slash models slash application underscore record that looks something like the bellow example. It will have a class ApplicationRecord which inherits from ActiveRecord Base. 
+
+```ruby
+# app/models/application_record.rb
+class ApplicationRecord < ActiveRecord::Base
+    self.abstract_class = true
+end    
+``` 
+
+Then you'll on the next example, when we work with our models those models are now going to inherit from ApplicationRecord not ActiveRecord Base.
+
+```ruby
+# app/models/product.rb
+class Product < ApplicationRecord
+    self.abstract_class = true
+end
+``` 
+
+On the Rails 5, they don't have to. They could still inherit from ActiveRecord Base and everything would still work fine, but now we have this intermediary super class where we can put code that's common to all of our models.
+
+Notice that ApplicationRecord has a very important line in it that says `self.abstract_class = true`, that tells Rails don't assume that there's an underlying table called AppllicationRecords which can be queried. Instead this is just a utility class that has no database table behind it. Even if you never have common code that you want to put in to ApplicationRecord it's good to go ahead and follow this new model that the Rails framework wants us to use.
+
+The same thing is true for ApplicationJob. ApplicationJob is a class that inherits from ActiveJob Base and then each of our jobs would inherit from ApplicationJob instead of ActiveJob Base. 
+
+```ruby
+# app/jobs/application_job.rb
+class ApplicationJob < ActiveJob::Base
+    
+end
+``` 
+
+```ruby
+# app/jobs/application_job.rb
+class RemoveOldCartsJob < ApplicationJob
+    
+end
+``` 
+
+There's no need to use `self.abstract_class = true` because out jobs don't have databases behind them anyway.
+
+To demonstrate why this small change is a significant improvement to Rails. Let's compare version four and five. Here in Rails 4 I would have a module called `ActsAsCoolFeature` and inside it might be whatever methods I have that do that cool feature.
+
+On the bellow example, I would have a module called ActsAsCoolFeature in Rails 4 and inside it might be whatever methods I have that do that cool feature.
+
+```ruby
+# Rails 4
+module ActsAsCoolFeature
+    def do_a_cool_feature
+    end
+end
+
+ActiveRecord::Base.include(ActsAsCoolFeature)
+``` 
+As we can see on the above example, if I want to add that into my models and I want to have it in all of my models I would have ActiveRecord Base include ActsAsCoolFeature. Now, all of my models have ActsAsCoolFeature built into them.
+
+Pretty cool, right? Except that this technique is called [monkey patching]() and it refers to modifications of a class at run-time with the intent of changing their behavior. 
+By patching ActiveRecord Base directly we're patching it for everyone that uses it. If we're running a small app that's not a big deal, but if we're using gems, plug-ins, engines, or writing complex code, each one of those is potentially expecting to have a clean ActiveRecord Base to work with and our module could interfere with their work.
+
+Instead, in Rails 5 with ApplicationRecord we have the ability to include the class in our intermediary class, ApplicationRecord, and not in ActiveRecord Base. ActiveRecord Base stays a pristine class that everyone can use. Our features included, but only for our models which inherit from ApplicationRecord. 
+
+```ruby
+# Rails 5
+module ActsAsCoolFeature
+    def do_a_cool_feature
+    end
+end
+
+class ApplicationRecord < ActiveRecord::Base
+    self.abstract_class = true
+    include ActsAsCoolFeature
+end
+```
+
+The same thing is true for ApplicationJob and the desire to keep a pristine version of ActiveJob Base around. So while it may seem like the Rails framework has just thrown a couple of extra files into a default application, they're there for a good reason and I encourage you to use them.
+
+
+
