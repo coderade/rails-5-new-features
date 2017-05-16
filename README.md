@@ -213,12 +213,13 @@ App.room.speak('Hello ActionCable');
 //Triggers App.room.received on all subscribers
 ``` 
 
-Let's review what the above code looks like. It calls this perform speak, and it passes along our message That then in turn calls `ChatRoomChannel` speak. Which in turn calls `ActionCable` server broadcast and sends our message out to that channel and anyone who subscribed to it is going to get it.
+Let's review what the above code looks like: it calls `this.perform('speak')`, and it passes along our message That then in turn calls `ChatRoomChannel` speak. Which in turn calls `ActionCable` server broadcast and sends our message out to that channel and anyone who subscribed to it is going to get it.
 
-It's gonna be streamed to that WebSocket. Once that's received by the client, it's gonna trigger `App.room.received` on all the subscribers. Which in turn calls alert and alerts with our message, so that we see what the message was.
+It's gonna be streamed to that WebSocket, once that's received by the client, it's gonna trigger `App.room.received` on all the subscribers, which in turn calls alert and alerts with our message, so that we see what the message was.
 
-Now this is a very simple example. Meant to just give you the flow of how things work. There's a lot more that you can do, and a lot of configurations to help you to do them.
-If you wanna experiment or learn more, a great resource is the rails actionCable examples that are on [github](https://github.com/rails/actioncable-examples) and official Action Cable [documentation](http://guides.rubyonrails.org/action_cable_overview.html).
+Now this is a very simple example, meant to just give you the flow of how things work, there's a lot more that you can do and a lot of configurations to help you to do them.
+
+If you wanna experiment or learn more, a great resource is the Rails ActionCable examples that are on [github](https://github.com/rails/actioncable-examples) and official Action Cable [documentation](http://guides.rubyonrails.org/action_cable_overview.html).
 
 
 
@@ -229,13 +230,15 @@ If you wanna experiment or learn more, a great resource is the rails actionCable
 
 #### Overview
 
-Another major feature of Ruby on Rails 5, is ActionController Renderer. ActionController Renderer allows us to render templates, but to do it independently of our controller, it's particularly useful for things like ActionCable. We can render bits of content, that we broadcast to all our subscribers and we don't have to load up all of the action controller code, with parts that we don't need like cookies and redirects. We can just use the rendering feature on its own.
+Another major feature of Ruby on Rails 5, is ActionController Renderer. ActionController Renderer allows us to render templates, but to do it independently of our controller, it's particularly useful for things like ActionCable.
+
+We can render bits of content, that we broadcast to all our subscribers and we don't have to load up all of the action controller code, with parts that we don't need like cookies and redirects, we can just use the rendering feature on its own.
 
 #### Examples
 
-The way that you use it, is very straight forward, it's just like you would render inside a controller, so instead of just calling render, we now call `ApplicationController.render`, and then tell render what we wanna render.
+The way that you use it, is very straight forward and it's just like you would render inside a controller, so instead of just calling render, we now call `ApplicationController.render` and then tell render what we wanna render.
 
-On the bellow sample a template called `products/index` will be rendered and it's gonna look for that template in its normal place. It's gonna look for a template called index it in the views directory, inside the products directory.
+On the bellow sample a template called `products/index` will be rendered and it's gonna look for that template in its normal place, it's gonna look for a template called index in the views directory inside the products directory.
 
 ```ruby
 ApplicationController.render(
@@ -249,7 +252,7 @@ You can also use the shorthand form for this, that you're probably more familiar
 ApplicationController.render('products/index')
 ```
 
-Another nice shorthand, is that if instead of calling render on ApplicationController, we call it on one of our custom controllers which inherits from ApplicationController. Then we don't even have to provide the directory for where to find the template.
+Another nice shorthand is that if instead of calling render on ApplicationController, we call it on one of our custom controllers which inherits from ApplicationController. Then we don't even have to provide the directory for where to find the template.
 
 It knows that it's going to look in the products directory, because we're working with the ProductsController, so that's where it's going to look by default, for this index template, and just like our controllers we don't have to just render the html.
 
@@ -327,25 +330,25 @@ We're gonna be setting up our application from the start so that it omits a lot 
 
 #### Why Rails as JSON API?
 
-* **No need for templates, HTML, CSS and JavaScript** - there's no need for templates, HTML, CSS, and JavaScript, all that can be left out, and when we use our generators in Rails it's gonna skip generating the views, the helpers and the assets whenever we create a new resource.
+* **No need for templates, HTML, CSS and JavaScript** - there's no needed for templates, HTML, CSS, and JavaScript, all that can be left out, and when we use our generators in Rails it's gonna skip generating the views, the helpers and the assets whenever we create a new resource.
 * **Most application logic is outside the View layer** - most of the application logic is performed inside our controllers and models and not inside the view, so we can let the client just simply be our view layer for us
 * Less controller and middleware code - when we go to create a new resource, the Rails as an API is going to leave out modules which are primarily useful for browser applications, like cookie support. It won't put jQuery or turbolinks into our gem file because it knows we won't be using them.
 * Configured for API-style applications
 * Familiar Ruby framework, RubyGems, Bundler
 * Sensible defaults and generators
 * Keep key features: security, routing, caching, error handling, logging and etc.
-* Development and test environments - The test is an important aspect too, so we can continue to write test for our application in a way that we're used to do our Rails apps.
+* Development and test environments - the test is an important aspect too, so we can continue to write test for our application in a way that we're used to do our Rails apps.
 
 
 #### How do we use it?
 
-To create a Rails API application all you need to do when you create a new Rails app is to add the `--api` option to the end. As the following command:
+To create a Rails API application all you need to do when you create a new Rails app is to add the `--api` option to the end, as the following command:
 
 ```
 rails new my_backend_api --api
 ```
 
-The biggest difference is this single line, as we can see on the below example, inside the `config/application.rb` file there's a new line that says `config.api_only = true`, and that's what tells Rails to be in API mode in everything that it does. 
+The biggest difference is this single line, as we can see on the below example, inside the `config/application.rb` file there's a new line that says `config.api_only = true` and that's what tells Rails to be in API mode in everything that it does. 
 
 ```ruby
 # config/application.rb
@@ -357,9 +360,9 @@ module MyBackendApi
 end    
 ```
 
-Every time you use a generator, every time you do anything in your application, it's going to be in API mode. If you're converting over from an existing application, then this is a line that you'll need to add.
+Every time you use a generator, every time you do anything in your application, it's going to be in API mode, if you're converting over from an existing application, then this is a line that you'll need to add.
 
-Another difference is in our controllers, we still have controllers, but we don't want all the HTTP parts that we aren't going to be using. So application controller is going to inherit from the class action controller API. 
+Another difference is in our controllers, we still have controllers, but we don't want all the HTTP parts that we aren't going to be using, so the `ApplicationController` is going to inherit from the class `ActionController::API`. 
 
 ```ruby
 # app/controllers/application_controller.rb
@@ -369,9 +372,9 @@ end
   
 ``` 
 
-Normally it would inherit from action controller base. This change leaves out code like cookies and sessions, which we don't need, but still gives us other parts of the controllers that we do want, such as before actions, security methods, page caching. 
+Normally it would inherit from `ActionController::Base`,this change leaves out code like cookies and sessions, which we don't need, but still gives us other parts of the controllers that we do want, such as before actions, security methods, page caching. 
 
-And then the controllers that we generate are going to inherit from application controller, which in turn inherits from the API.
+The controllers that we generate are going to inherit from `ApplicationController`, which in turn inherits from the API.
 
 ```ruby
 # app/controllers/notes_controller.rb
@@ -396,7 +399,7 @@ end
 So our controllers are going to work the same way and the generated content of our controllers will also be different.
 Notice in the above example that these controllers rendered JSON resources by default, they also include create, update and destroy actions, but unlike regular controllers they don't automatically have a new and edit action, because typically those are just HTML pages for submitting forms and an API client would be expected to take care of that business for us. 
 
-Our routes still use resourceful routes and we define them the same way, but if you take this and then run rake routes on it you'll see that the new and edit routes that are normally present when doing restful routing are no longer included with the API version.
+Our routes still use resourceful routes and we define them the same way, but if you take this and then run `rails routes` on it you'll see that the new and edit routes that are normally present when doing restful routing are no longer included with the API version.
 
 ```ruby
 # config/routes.rb
@@ -407,7 +410,9 @@ Rails.application.routes.draw do
 end    
 ```
 
-We don't need them, in the same way that we don't need the actions that correspond to them, you can add them back if you decide you do. But they're not there by default. With Ruby on Rails 5, Rails developers who want to create backend applications where Rails serves as a JSON API will find it much easier than they have in the past and it will also omit a lot of the application code that you don't need to make your application as lean and fast as possible.
+We don't need them, in the same way that we don't need the actions that correspond to them, you can add them back if you decide you do, but they're not there by default. 
+
+With Ruby on Rails 5, Rails developers who want to create backend applications where Rails serves as a JSON API will find it much easier than they have in the past and it will also omit a lot of the application code that you don't need to make your application as lean and fast as possible.
 
 For more information of how use Rails for API-only Applications, see the official [documentation](http://edgeguides.rubyonrails.org/api_app.html).
 
@@ -780,7 +785,7 @@ end
 ``` 
 
 ```ruby
-# app/jobs/application_job.rb
+# app/jobs/remove_old_carts_job.rb
 class RemoveOldCartsJob < ApplicationJob
     
 end
