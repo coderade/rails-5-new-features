@@ -299,8 +299,7 @@ ApplicationController.render(
 
 In case the difference between assigns and locals is not completely clear, here's another example that shows them both being applied to the rendering of a bit of inline ERB, so my template is that inline ERB.
 
-You can see that in the first blank I have an instance variable for version, and a local variable then in the second blank for adjective, so I'm using assigns to set the instance variable. I'm using locals to set the local variable. 
-
+You can see that in the first blank I have an instance variable for version, and a local variable then in the second blank for adjective, so I'm using assigns to set the instance variable, I'm using locals to set the local variable. 
 
 ```ruby
 (
@@ -311,7 +310,8 @@ You can see that in the first blank I have an instance variable for version, and
     :locals => { :version => 5 },
 )
 ``` 
-Overall, rendering works pretty much the same way that it does inside our controllers. What's different in Rails 5, is the fact that we've gained the ability to do this rendering outside of controllers. We don't need a controller in order to render code. We can do it inside our channels.
+
+Overall, rendering works pretty much the same way that it does inside our controllers, what's different in Rails 5, is the fact that we've gained the ability to do this rendering outside of controllers. We don't need a controller in order to render code, we can do it inside our channels.
 
 We could do it inside our jobs, our mailers, inside our rake tasks. There's all sorts of places that rendering can now take place without having to have all that controller code loaded in.
 
@@ -325,29 +325,31 @@ For more information about Renderers see the Ruby `ActionController::Renderer`[d
 
 This feature almost made it into Rails 4 back in 2012, but instead it became a stand alone Ruby gem, which has now been incorporated into Rails 5.
 
-You should note that it is possible to have an existing Rails application which doubles as a JSON API. In other words it serves up both HTML and JSON. But that's not what this example is. This will talk about making a Rails app which is exclusively an API. We're gonna be setting up our application from the start so that it omits a lot of the normal Rails application code.
+You should note that it is possible to have an existing Rails application which doubles as a JSON API. In other words it serves up both HTML and JSON. But that's not what this overview is, this will talk about making a Rails app which is exclusively an API.
+
+We're gonna be setting up our application from the start so that it omits a lot of the normal Rails application code.
 
 #### Why Rails as JSON API?
 
-* No need for templates, HTML, CSS and JavaScript - there's no need for templates, HTML, CSS, and JavaScript, all that can be left out, and when we use our generators in Rails it's gonna skip generating the views, the helpers, and the assets whenever we create a new resource.
-* Most application logic is outside the View layer - most of the application logic is performed inside our controllers and models and not inside the view. So we can let the client just simply be our view layer for us
+* **No need for templates, HTML, CSS and JavaScript** - there's no need for templates, HTML, CSS, and JavaScript, all that can be left out, and when we use our generators in Rails it's gonna skip generating the views, the helpers and the assets whenever we create a new resource.
+* **Most application logic is outside the View layer** - most of the application logic is performed inside our controllers and models and not inside the view, so we can let the client just simply be our view layer for us
 * Less controller and middleware code - when we go to create a new resource, the Rails as an API is going to leave out modules which are primarily useful for browser applications, like cookie support. It won't put jQuery or turbolinks into our gem file because it knows we won't be using them.
 * Configured for API-style applications
 * Familiar Ruby framework, RubyGems, Bundler
 * Sensible defaults and generators
 * Keep key features: security, routing, caching, error handling, logging and etc.
-* Development and test environments -The test is an important aspect too, so we can continue to write test for our application in a way that we're used to do our Rails apps.
+* Development and test environments - The test is an important aspect too, so we can continue to write test for our application in a way that we're used to do our Rails apps.
 
 
 #### How do we use it?
 
-To create a Rails API application, all you need to do when you create a new Rails app is to add the dash dash api option to the end. As the following command:
+To create a Rails API application all you need to do when you create a new Rails app is to add the `--api` option to the end. As the following command:
 
 ```
 rails new my_backend_api --api
 ```
 
-The biggest difference is this single line. inside config/application.rb there's a new line that says config.api_only = true. And that's what tells Rails to be in API mode in everything that it does. Every time you use a generator, every time you do anything in your application, it's going to be in API mode. If you're converting over from an existing application, then this is a line that you'll need to add.
+The biggest difference is this single line, as we can see on the below example, inside the `config/application.rb` file there's a new line that says `config.api_only = true`, and that's what tells Rails to be in API mode in everything that it does. 
 
 ```ruby
 # config/application.rb
@@ -357,9 +359,11 @@ module MyBackendApi
         config.api_only = true    
     end    
 end    
-``` 
+```
 
-Another difference is in our controllers. We still have controllers, but we don't want all the HTTP parts that we aren't going to be using. So application controller is going to inherit from the class action controller API. 
+Every time you use a generator, every time you do anything in your application, it's going to be in API mode. If you're converting over from an existing application, then this is a line that you'll need to add.
+
+Another difference is in our controllers, we still have controllers, but we don't want all the HTTP parts that we aren't going to be using. So application controller is going to inherit from the class action controller API. 
 
 ```ruby
 # app/controllers/application_controller.rb
@@ -369,7 +373,7 @@ end
   
 ``` 
 
-Normally it would inherit from action controller base. This change leaves out code like cookies and sessions, which we don't need, but still gives us other parts of the controllers that we do want. Such as before actions, security methods, page caching. 
+Normally it would inherit from action controller base. This change leaves out code like cookies and sessions, which we don't need, but still gives us other parts of the controllers that we do want, such as before actions, security methods, page caching. 
 
 And then the controllers that we generate are going to inherit from application controller, which in turn inherits from the API.
 
@@ -393,7 +397,8 @@ end
   
 ``` 
 
-So our controllers are going to work the same way, and the generated content of our controllers will also be different. Notice in the above example that these controllers rendered JSON resources by default. They also include create, update, and destroy actions. But unlike regular controllers they don't automatically have a new and edit action. Because typically those are just HTML pages for submitting forms. And an API client would be expected to take care of that business for us. 
+So our controllers are going to work the same way and the generated content of our controllers will also be different.
+Notice in the above example that these controllers rendered JSON resources by default, they also include create, update and destroy actions, but unlike regular controllers they don't automatically have a new and edit action, because typically those are just HTML pages for submitting forms and an API client would be expected to take care of that business for us. 
 
 Our routes still use resourceful routes and we define them the same way, but if you take this and then run rake routes on it you'll see that the new and edit routes that are normally present when doing restful routing are no longer included with the API version.
 
@@ -406,7 +411,7 @@ Rails.application.routes.draw do
 end    
 ```
 
-We don't need them the same way that we don't need the actions that correspond to them. You can add them back if you decide you do. But they're not there by default. With Ruby on Rails 5, Rails developers who want to create backend applications where Rails serves as a JSON API will find it much easier than they have in the past. And it will also omit a lot of the application code that you don't need to make your application as lean and fast as possible.
+We don't need them, in the same way that we don't need the actions that correspond to them, you can add them back if you decide you do. But they're not there by default. With Ruby on Rails 5, Rails developers who want to create backend applications where Rails serves as a JSON API will find it much easier than they have in the past and it will also omit a lot of the application code that you don't need to make your application as lean and fast as possible.
 
 For more information of how use Rails for API-only Applications, see the official [documentation](http://edgeguides.rubyonrails.org/api_app.html).
 
@@ -414,6 +419,7 @@ For more information of how use Rails for API-only Applications, see the officia
 ### Turbolinks 5
 
 Turbolinks was first introduced in Ruby on Rails 4. This version of Turbolinks has now been renamed as [Turbolinks Classic](https://github.com/turbolinks/turbolinks-classic), and version five, which comes with Ruby on Rails 5, is a ground up rewrite with a new flow and new events, but which still uses the same core idea as Turbolinks Classic.
+
 The new version is faster than the old one, and also offers the ability to do partial replacements of webpages. We'll take a look at that feature in a moment.
 
 #### Why Turbolinks?
