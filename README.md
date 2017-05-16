@@ -1,6 +1,6 @@
 # Rails 5 new features
 
-This project show the new features, improvements and other important changes to Ruby on Rails version 5. It will shows how to use the most important features of Rails 5, including action cable, action controller renderer, turbolinks, the active records, attributes API, and how to use Rails exclusively as a Json API. And will discuss too the many other smaller changes in improvements such as the Rails command router, new date and time methods, secure tokens, and changes to parameters.
+This project show the new features, improvements and other important changes to Ruby on Rails version 5. It will shows how to use the most important features of Rails 5, including Action Cable, Action Controller Renderer, Turbolinks, the Active records, Attributes API, and how to use Rails exclusively as a Json API, and will discuss too the many other smaller changes in improvements such as the Rails command Router, new Date and Time methods, Secure Tokens, and changes to parameters.
 
 In addition, it will show the features that are being deprecated or completely removed. This is an important topic if you have an existing project that uses any of these features.
 
@@ -48,21 +48,21 @@ In addition, it will show the features that are being deprecated or completely r
 * Less time doing garbage collection (GC)
 * Requires 2.2.2 or greater
 * [GC of symbols (Incremental GC)](https://www.sitepoint.com/symbol-gc-ruby-2-2/)
-* **Incremental GC: ~2x faster** - Previously, that meant that Ruby would periodically go through all the objects in memory, mark the ones that were still fresh or being used, and then make a second pass to remove the unmarked objects from memory.
- The problem is that that GC sweep through memory takes some time, it can slow down your code while it's happening. Ruby 2.1 improved the speed of this process somewhat by classifying objects in memory based on the likelihood they would need to be garbage-collected. But a large collection could still slow things down. Well, now, in Ruby 2.2, we get incremental GC. And the basic idea is to break up the scanning and removal of objects so that the process happens incrementally, not all in one big sweep. So while the total work and the total time may still be the same, it's broken up among many smaller operations.
+* **Incremental GC: ~2x faster** - Previously, the Ruby would periodically go through all the objects in memory, mark the ones that were still fresh or being used, and then make a second pass to remove the unmarked objects from memory.
+The problem with this is that that GC sweep through memory takes some time, it can slow down your code while it's happening. Ruby 2.1 improved the speed of this process somewhat by classifying objects in memory based on the likelihood they would need to be garbage-collected, but a large collection could still slow things down. Well, now, in Ruby 2.2, we get incremental GC and the basic idea is to break up the scanning and removal of objects so that the process happens incrementally, not all in one big sweep, so while the total work and the total time may still be the same, it's broken up among many smaller operations.
 * **Optimizes common operations** - The core team has optimized common operations, the code has fewer dependencies on other code in libraries, and there are fewer object allocations to memory. Now, that may seem like a small point that doesn't make much difference, but, as one example, link and URL generation in Ruby on Rails 5 is 44 percent faster.
 * Fewer dependencies
 * Fewer object allocations
-* **Development environment is faster** - The development environment uses the Puma web server now, instead of using WEBrick, and development mode used to check the modification time of all of your files in your project to know if anything had changed, so that it could automatically reload the development environment for you. But now, there is a file system monitor, which notifies Rails whenever something changes. There is no more requirement to check the modification times of all the files. And that makes development feel snappier when you are working. And on top of these performance improvements.
+* **Development environment is faster** - The development environment uses the Puma web server now, instead of using WEBrick, and the development mode used to check the modification time of all of your files in your project to know if anything had changed too, so that it could automatically reload the development environment for you. But now, there is a file system monitor, which notifies Rails whenever something changes. There is no more requirement to check the modification times of all the files. And that makes development feel snappier when you are working. And on top of these performance improvements.
 
 
 ## Major features
 
 ### Action Cable and Websockets
 
-* Framework for working with Websockets.
-* Allows real-time features using a constant connection between server and clients.
-* Comprised of server-side Ruby and client-side Javascript
+* Framework for working with Websockets
+* Allows real-time features using a constant connection between server and clients
+* Comprised of server-side Ruby and client-side JavaScript
 * Uses Redis pubsub to track communications
 
 #### Uses for Action Cable
@@ -101,7 +101,7 @@ In addition, it will show the features that are being deprecated or completely r
 
 * Monopolizes a serve connection - No one else can talk to the server across that connection while it's in use
 * Even when nothing much is happening and a lot of data's not being sent
-* HTTP request-response cycle can serve more clients - So when I make a request for a webpage. The server sends me the webpage, and then while I'm reading the webpage and deciding what I want my next decision to be, my next request to the server, it can go ahead and serve other clients in the meantime.
+* HTTP request-response cycle can serve more clients - So when I make a request for a webpage, the server sends me the webpage, and then while I'm reading the webpage and deciding what I want my next decision to be, my next request to the server, it can go ahead and serve other clients in the meantime.
 * No page caching - Different of the HTTP requests, with something like a webpage, that can be cached and sent very quickly back to the client. With WebSockets we have to dynamically respond all the time, and in fact, most applications just simply
 * Most applications do not require realtime communication
 
@@ -112,7 +112,7 @@ With WebSockets we have to dynamically respond all the time, and in fact, most a
 
 ##### ActionCable Terminology
 
-* Cable -  single connection between a server and a client That's one single client, so when we open a connection between them, we call that a cable.
+* Cable - single connection between a server and a client that's one single client, so when we open a connection between them, we call that a cable.
 * Channel - stream of data to which clients ca subscribe
 * Subscriptions: a client's currently subscribed channels
 * Broadcast: message sent on channel to subscribed clients
@@ -151,11 +151,11 @@ class ChatRoomChannel < ApplicationCable::Channel
 end    
 ``` 
 
-There will usually be an unsubscribed action as well. Subscribed and Unsubscribed are the two standard actions. These two actions do whatever code you want to do whenever a user subscribes or unsubscribes from a channel. Often what you wanna do when they're subscribing is to start streaming data to them across the channel, and you can see that that's what I'm doing in my subscribe method when I'm calling stream from. Now, speak is a custom action of my own creation. Here I've added just a basic example. When the speak action is called, then the ActionCable server is going to broadcast a message on the chat room channel, and you can see that I'm passing in whatever I want that data to be.
+There will usually be an unsubscribed action as well, subscribed and unsubscribed are the two standard actions. These two actions do whatever code you want to do whenever a user subscribes or unsubscribes from a channel. Often what you wanna do when they're subscribing is to start streaming data to them across the channel, and you can see that that's what I'm doing in my subscribe method when I'm calling stream from. For this overview I created The speak method, that is a custom action of my own creation, on it I've added just a basic example, when the speak action is called, then the ActionCable server is going to broadcast a message on the chat room channel, and you can see that I'm passing in whatever I want that data to be.
 
-Anyone that's streaming from that channel anyone who's subscribed, will be sent that message immediately. Once we have our chat room channel set up, and we have subscribed, unsubscribed and any of the custom actions that we wanna have inside there. 
+Anyone that's streaming from that channel anyone who's subscribed, will be sent that message immediately, once that we have our chat room channel set up, and we have subscribed, unsubscribed and any of the custom actions that we wanna have inside there. 
 
-Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so. Here you see I have variable for App, and then I'm setting App.cable equal to `ActionCable.createConsumer`. This gives our JavaScript object all the features that it needs to communicate with the server.
+Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so, on the bellow example you see I have variable for App, and then I'm setting `App.cable` equal to `ActionCable.createConsumer`. This gives our JavaScript object all the features that it needs to communicate with the server.
 
 ```javascript
 // app/assets/javascripts/cable.js
