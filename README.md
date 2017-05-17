@@ -37,6 +37,7 @@ In addition, it will show the features that are being deprecated or completely r
     - [Application Record and Application Job](#application-record-and-application-job) 
     - [Integer methods: #positive? and #negative?](#integer-methods-positive-and-negative)
     - [Date and time improvements](#date-and-time-improvements)
+    - [Relations in batches](#relations-in-batches)
 
 
 
@@ -963,3 +964,52 @@ Time.days_in_year(2016)
 Each one of these examples is a small improvement to Rails, but taken all together they make date and time easier to work with.
 
 
+### Relations in batches
+
+Ruby on Rails 5 gives us the ability to work with Active record relations in batches. To understand how it works, let's first look at find in batches.
+
+```ruby
+Product.find_in_batches do |batch|
+    sleep 5
+    batch.each do |product|
+        product.recalculate_inventory
+    end
+end
+
+```
+
+Which is an older method that was in Rails 4, and continues to exist in Rails 5, it looks like the above example. Product and then the `find_in_batches` method and then a block of code that I wanna perform on each batch. 
+
+The default batch size is 1,000 records, or you can pass in batch size as an option if you want something different. The way that this works, is that Ruby on Rails makes a query to the database and finds the first 1,000 records, it brings them back, instantiates them into objects and puts them in array and renders them up to my block of code.
+
+My particular block of code here in this example is going to sleep for five seconds and then iterate through the products in that batch and tell each product to recalculate its inventory. This technique works great when we have expensive or long running processes that would monopolize the resources of a server. 
+
+By sleeping for five seconds between batches, it gives the server a change to breathe, to catch up, to answer other people's requests, and do their jobs, instead of letting my code monopolize its resources.
+
+In many cases, this technique works great. However, there are some cases where it doesn't work. Look the below example:
+
+```ruby
+Product.find_in_batches do |batch|
+    batch.update_all(:on_sale => false)
+end
+```
+Let's imagine that I call product.find in batches and then what I wanna do to each batch after I sleep for five seconds is to tell it to update all the records in that batch with on sale false.
+The `update_all` is a great method to use when we wanna update a lot of records, because what it does is it sends off a single SQL query to the database, telling it to update all of these records with this value.
+
+The reason why this doesn't work, is because update all is something you would call in a class or on an active record relation or a scope. Instead, in this case, batch is an array. It's an array of objects from the database, so the query has already been made, the objects have been created and they're put into this array and I can't call update all on it. Now, I could go through each of those products in that array and tell each and every one to update its attributes, so that on sale was equal to false, but if I did that then each batch would send off 1,000 SQL queries to the database.
+
+Where as update all would update all 1,000 records with one SQL query which is much more efficient, I'd really like to be able to use it, but it doesn't work with find in batches.
+
+What Ruby on Rails 5 offers us, is a new method which is called `in_batches`.
+
+```ruby
+Product.in_batches do |batch|
+    sleep 5
+    batch.update_all(:on_sale => false)
+end
+```
+It's the same thing, but it doesn't have find at the beginning, It makes it easy to remember. 
+
+The difference here, is that product.in batches does not fire off SQL and go out and retrieve the objects and instantiate them and put them in an array, Instead it returns a relation to batch and that way when we're inside the block I can call `batch.update_all` and it fires off that single SQL query to update all 1,000 records at one time.
+
+Now I also have the ability to tell the batch that it should go out and retrieve those records and do something else with them, if I want to, but it doesn't presuppose that I want to do that, it waits and allows me to make that choice inside the block and that makes in batches a nice option for us to have
