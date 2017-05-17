@@ -1031,12 +1031,12 @@ In the past, everyone had to craft their own custom solution for this, Rails 5 w
 
 There are two parts to the process. The first is getting the columns set up on your database, and you can do that either from the command line, using rails generate or by writing a migration.
 
-
+###### Rails generate command
 ```
 rails g model Invitation auth_token:token
 ```
-###### Rails generate command
 
+###### Migration class
 ```ruby
 class CreateInvitations < ActiveRecord::Migration
     def change
@@ -1046,7 +1046,6 @@ class CreateInvitations < ActiveRecord::Migration
     end
 end
 ```
-###### Migration class
 
 In both cases, you can see that I'm providing the column name, which is gonna be my token name, and I made that auth_token, and then the type of column is going to be token. 
 That's a new type that's introduced in Ruby on Rails 5, so instead of having a string, or an integer, or a date time column, we tell it that it's a token column.
@@ -1089,3 +1088,68 @@ To prevent this, you're encouraged to use a unique index on the database column 
 It's an unlikely scenario, but if you add it then you'll never need to worry, and that's all there is to being able to use secure tokens in your ActiveRecord models.
 
 You can find out more about the ActiveRecord Secure Tokens at the your Rails documentation [page](http://api.rubyonrails.org/classes/ActiveRecord/SecureToken/ClassMethods.html).
+
+
+### ActiveRecord Secure Tokens
+
+Another improvement in Ruby on Rails 5, is that the procedure for aborting ActiveRecord callbacks has changed. In Rails 5, callbacks no longer halt whenever the last statement in the callback is false. Instead you must explicitly stop them, by using throw abort.
+
+Let me demonstrate the issue that this change is meant to solve. 
+
+Here's a class for product, in Rails 4. 
+
+```ruby
+# Rails 4
+class Product < ActiveRecord::Base
+    before_save :set_in_stock_value
+    before_save :process_product_image
+
+    def set_in_stock_value
+        self.in_stock = Inventory.in_stock_for(code)
+    end
+
+    def process_product_image
+        # Some image processing code
+    end
+end
+```
+
+Notice that it has two before save callbacks. Set in stock value, and process product image.
+
+They're going to be executed in the order they're defined, when set in stock value is called, it sets in stock value to the returned value of inventory in stock for, and this value's going to be true or false. Here's the problem, when a Ruby method finishes, if there's no explicitly returned value, then it returns the last value evaluated inside the method. That's just how Ruby works, in this case, that will be the value returned by inventory in stock for, which could be false, and if it's false, then set in stock value returns false.
+
+When the before save callback receives that false signal, in Rails 4, it halts the callback chain and it aborts the save, so the second callback, process product image never gets called, and the record isn't saved to the database and not because we wanted it to fail, but just because of a quirk in our code. In Rails 4, this was an easy mistake to make without meaning to. In Rails 5, this code would work as expected, and inadvertently returning false will not stop the whole show. 
+
+Instead, in Rails 5, you must explicitly tell the callback to stop.
+
+```ruby
+# Rails 5
+class Product < ApplicationRecord
+
+    before_save :set_in_stock_value
+    before_save :process_product_image
+
+    def set_in_stock_value
+        throw(:abort) unless Inventory.in_stock_for(code)
+        self.in_stock = true
+    end
+
+    def process_product_image
+        # Some image processing code
+    end
+end
+```
+In the above example, you can see I've rearranged the logic of set in stock value so that it aborts the save if inventory in stock for, returns false. Otherwise, it sets the value to true, now you might not want to do this, this is in fact a different behavior than what we had on the last slide.
+
+What I wanna show you is that you must explicitly use throw abort anytime you do want the callback chain to stop, so if you have code in the existing application that was depending on returning false to stop the callback chain, then you'll wanna swap those in with using throw abort instead.
+
+This is a configurable option. If you create a new Ruby on Rails 5 project it adds an initializer called callback terminator. 
+
+```ruby
+# config/initializers/callback_terminator.rb
+ActiveSupport.halt_callback_chains_on_return_false = false
+```
+
+Where you can set the value for halt callback chains on return false, equal to true or false. A new project's gonna set it to false. If you're upgrading from an older version of Rails, then you might wanna add this initializer as well. If you were to add the configuration and then change it to true, you'd get the Rails 4 behavior again. However, you should only use it like that, long enough for you to upgrade you application to the new behavior.
+
+Eventually, once everyone's had an opportunity to make the change, I expect this configuration is likely to go away.
