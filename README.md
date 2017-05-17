@@ -1251,3 +1251,66 @@ if(params == obj) { ... }
 The older version still works in 5.0, but you'll get a deprecation warning that starting in 5.1 you'll be required to do it the new way, so to summarize, in most cases, parameters still act like a hash, but we have to be careful now because there are some cases when they don't act just like a hash and these security features come into play. 
 
 It's a small, but important change, that could break some of your older code.
+
+
+## Enumerable#without
+
+Ruby on Rails 5 adds a new method to Enumerable called without. Enumerable#without returns a copy of the enumerable, but without the elements that we've passed in as arguments.
+
+Now, the enumerable is actually a module that's included in several other classes, such as array, and hash, so what we're really talking about is being able to use this without method on an array or a hash. 
+
+So for example let's say we have an array, like fruit. In that array we have apple, plum, banana, and orange. 
+
+```ruby
+fruit %w(apple plum banana orange)
+```
+
+We can call ``fruit.without` plum and orange and we'll get back an array that has apple and banana in it.
+
+```ruby
+fruit.without('plum', 'orange')
+#=> ['apple', 'banana']
+```
+
+If we have a hash which has keys for a, b, c and d and then various numbers corresponding to those.
+
+```ruby
+hash = {:a => 27, :b => 34, :c => 56, :d => 4} 
+```
+then if we call a hash without b and c, we would get back a hash that contains the key value pairs for a and d.
+
+```ruby
+hash.without(:b, :c)
+#=> {:a => 27, :d => 4}
+```
+
+This method is mostly just to give us a nicer way to do something we've already been able to do before. 
+
+For example, you could do it with reject:
+
+```ruby
+users.reject {|u| paid_users.include?(u)}
+```
+
+Or if you have two arrays, you could do it using subtraction, so I could have `users - paid_users`.
+
+```ruby
+users - paid_users
+
+users - [current_user]
+```
+
+But it can be a bit of hassle when you have only a single user because then you have to make an array in order to get the subtraction to work. 
+
+Using without is cleaner, and it clearly states what we're trying to achieve, and as a bonus it works with arrays, with a list of arguments, and with a single item. Without is a nice addition. It's easy to use and it makes your code clearer.
+
+```ruby
+users.without(paid_users)
+
+users.without(current_user)
+
+```
+
+For more information about `Enumerable#without` see the Ruby Enumerable#without [documentation](http://api.rubyonrails.org/classes/Enumerable.html#method-i-without).
+
+
