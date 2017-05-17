@@ -7,6 +7,7 @@ This project will discuss too the many other smaller changes in improvements suc
 In addition, it will show the features that are being deprecated or completely removed. This is an important topic if you have an existing project that uses any of these features.
 
 
+
 ## Table of contents
 
 - [About Ruby on Rails 5](#about-ruby-on-rails-5)
@@ -40,6 +41,11 @@ In addition, it will show the features that are being deprecated or completely r
     - [Integer methods: #positive? and #negative?](#integer-methods-positive-and-negative)
     - [Date and time improvements](#date-and-time-improvements)
     - [Relations in batches](#relations-in-batches)
+    - [ActiveRecord Secure Tokens](#activerecord-secure-tokens)
+    - [Rails generate command](#rails-generate-command)
+    - [Migration class](#migration-class)
+    - [Abort ActiveRecord Callbacks](#abort-activerecord-callbacks)
+    - [Changes to parameters](#changes-to-parameters)
 
 
 
@@ -1090,7 +1096,7 @@ It's an unlikely scenario, but if you add it then you'll never need to worry, an
 You can find out more about the ActiveRecord Secure Tokens at the your Rails documentation [page](http://api.rubyonrails.org/classes/ActiveRecord/SecureToken/ClassMethods.html).
 
 
-### ActiveRecord Secure Tokens
+### Abort ActiveRecord Callbacks
 
 Another improvement in Ruby on Rails 5, is that the procedure for aborting ActiveRecord callbacks has changed. In Rails 5, callbacks no longer halt whenever the last statement in the callback is false. Instead you must explicitly stop them, by using throw abort.
 
@@ -1153,3 +1159,95 @@ ActiveSupport.halt_callback_chains_on_return_false = false
 Where you can set the value for halt callback chains on return false, equal to true or false. A new project's gonna set it to false. If you're upgrading from an older version of Rails, then you might wanna add this initializer as well. If you were to add the configuration and then change it to true, you'd get the Rails 4 behavior again. However, you should only use it like that, long enough for you to upgrade you application to the new behavior.
 
 Eventually, once everyone's had an opportunity to make the change, I expect this configuration is likely to go away.
+
+### Changes to parameters
+
+Ruby on Rails 5 has made a few improvements to the strong parameters code that we use in our controllers, you're going to want to beware of any code which treats the parameters as if it was a simple hash, because it's not going to be anymore. It's no longer going to inherit from [HashWithIndiferentAccess](http://api.rubyonrails.org/classes/ActiveSupport/HashWithIndifferentAccess.html), as a fundamental class in Rails that allows us to access a hash, by providing either symbols or strings as the keys of the hash. Instead, our params are now going to be inheriting from a standalone parameters class.
+
+It's still going to have indifferent access, we can still access the values by using either symbols or strings, and also using the square bracket notation that you're used to. 
+
+```ruby
+params[:page] = 1
+
+params[:page]
+# => 1
+
+params['page']
+# => 1
+
+```
+
+It's not a hash with indifferent access anymore. It's an object which has similar behaviors, let me show you a way in which it's not the same. 
+
+In Rails 4, you might call slice on your params, in order to extract some of the key value pairs you wanted to work with, so `params.slice``and then sort by and sort dir, will return back the key value pairs, and the values that correspond to them.
+
+```ruby
+# Rails 4
+params.slice(:sort_by, :sort_dir)
+# => {:sort_by => 'name', :sort_dir => 'asc'}
+```
+
+In Ruby on Rails 5, calling the same code, might return nothing to us:
+
+```ruby
+# Rails 5
+params.slice(:sort_by, :sort_dir)
+# => {}
+```
+
+Even if those values exist in the params, and the reason why, is because params has been made more secure. It's stronger now, we'd already started that with strong params, it's carried over to the way that we interact with params inside our controllers as well, if we call `.class` on our params, we'll see the `ActionController::Parameters` class.
+
+
+```ruby
+# params is now a class, not a hash
+params.class
+# => ActionController::Parameters
+```
+
+In Ruby on Rails 5, if we wanna get access to that hash, then we have to either tell the params to convert it into a hash, using `to_unsafe_h`, and then slice those values
+
+```ruby
+# Rails 5
+params.to_unsafe_h.slice(:sort_by, :sort_dir)
+# => {:sort_by => 'name', :sort_dir => 'asc'}
+```
+
+Or we will have to permit the values and then we can work with them:
+
+```ruby
+# Rails 5, better technique
+params.permit([:sort_by, :sort_dir])
+params.slice(:sort_by, :sort_dir)
+# => {:sort_by => 'name', :sort_dir => 'asc'}
+```
+
+Permit is the same way that we normally work with strong parameters, so if we had already previously permitted them, for that purpose, then they'll be permitted here, but we need to make sure that they've been permitted.
+
+If they're not permitted, we don't have access to them, the only other way is to use to `unsafe_h` and that's meant to sound scary. It's meant to let you know that you're leaving behind the security features that params has and you're working with a basic hash from then on.
+
+The example above is with `#slice`, but it's also true for `#except`, `#extract`, `#select`, `#reject`, `#merge`, `#transform_keys` and all of the exclamation point versions of those (eg. `#slice!`).
+
+They only work with permitted params, so you either need to permit the params first, or you need to convert the parameters object into an unsafe hash. 
+
+There's another place that it makes a difference When you're comparing params against a hash. 
+
+```ruby
+# in Rails 4
+hash = {:sort_by => 'name', :sort_dir => 'asc'}
+if(params == hash) { ... }
+```
+
+Before, you would just be comparing params against a hash, and you'd be comparing two hashes to each other.
+
+But now, you're gonna be comparing an object against a hash, so the correct way to do that, is either take the hash and turn it into a similar parameters object or take the parameters and turn it into the unsafe hash, using the technique we saw earlier.
+
+```ruby
+# in Rails 5
+hash = {:sort_by => 'name', :sort_dir => 'asc'}
+obj = ActionController::Parameters#new(hash)
+if(params == obj) { ... }
+```
+
+The older version still works in 5.0, but you'll get a deprecation warning that starting in 5.1 you'll be required to do it the new way, so to summarize, in most cases, parameters still act like a hash, but we have to be careful now because there are some cases when they don't act just like a hash and these security features come into play. 
+
+It's a small, but important change, that could break some of your older code.
