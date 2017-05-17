@@ -1255,7 +1255,7 @@ The older version still works in 5.0, but you'll get a deprecation warning that 
 It's a small, but important change, that could break some of your older code.
 
 
-## Enumerable#without
+### Enumerable#without
 
 Ruby on Rails 5 adds a new method to Enumerable called without. Enumerable#without returns a copy of the enumerable, but without the elements that we've passed in as arguments.
 
@@ -1316,7 +1316,7 @@ users.without(current_user)
 For more information about `Enumerable#without` see the Ruby Enumerable#without [documentation](http://api.rubyonrails.org/classes/Enumerable.html#method-i-without).
 
 
-## Enumerable#pluck
+### Enumerable#pluck
 
 The new method on enumerable called pluck is similar to an existing [method](http://api.rubyonrails.org/classes/ActiveRecord/Calculations.html#method-i-pluck) on ActiveRecord called pluck. 
 
