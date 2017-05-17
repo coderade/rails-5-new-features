@@ -45,7 +45,7 @@ In addition, it will show the features that are being deprecated or completely r
     - [Rails generate command](#rails-generate-command)
     - [Migration class](#migration-class)
     - [Abort ActiveRecord Callbacks](#abort-activerecord-callbacks)
-    - [Changes to parameters](#changes-to-parameters)
+    - [Changes to parameters/params](#changes-to-parametersparams)
 
 
 
@@ -1160,7 +1160,7 @@ Where you can set the value for halt callback chains on return false, equal to t
 
 Eventually, once everyone's had an opportunity to make the change, I expect this configuration is likely to go away.
 
-### Changes to parameters
+### Changes to parameters/params
 
 Ruby on Rails 5 has made a few improvements to the strong parameters code that we use in our controllers, you're going to want to beware of any code which treats the parameters as if it was a simple hash, because it's not going to be anymore. It's no longer going to inherit from [HashWithIndiferentAccess](http://api.rubyonrails.org/classes/ActiveSupport/HashWithIndifferentAccess.html), as a fundamental class in Rails that allows us to access a hash, by providing either symbols or strings as the keys of the hash. Instead, our params are now going to be inheriting from a standalone parameters class.
 
