@@ -46,6 +46,8 @@ In addition, it will show the features that are being deprecated or completely r
     - [Migration class](#migration-class)
     - [Abort ActiveRecord Callbacks](#abort-activerecord-callbacks)
     - [Changes to parameters/params](#changes-to-parametersparams)
+    - [Enumerable#without](#enumerablewithout)
+    - [Enumerable#pluck](#enumerablepluck)
 
 
 
@@ -1313,4 +1315,88 @@ users.without(current_user)
 
 For more information about `Enumerable#without` see the Ruby Enumerable#without [documentation](http://api.rubyonrails.org/classes/Enumerable.html#method-i-without).
 
+
+## Enumerable#pluck
+
+The new method on enumerable called pluck is similar to an existing [method](http://api.rubyonrails.org/classes/ActiveRecord/Calculations.html#method-i-pluck) on ActiveRecord called pluck. 
+
+The way that works, is if we have a model, like user, we can ask it to pluck ID and the username and it will fire a new SQL query and pull back just those values, just the ID and the username and that's true, even if we've already previously loaded this scope, it goes directly to the database in order to ask for those values. Now often, we want to write methods which operate either on arrays or scopes.
+
+They don't really care which one it is, they want to do the same thing on both of them, by adding this enumerable pluck method, it allows enumerables to pluck values in the same way that active record pluck does.
+
+Let see an example:
+
+
+Let's say that I have an array of users, and inside that array I have three different hashes, and inside the hashes, I have an ID and a username for each of the users.
+
+
+```ruby
+users = [
+    {:id => 21, :username => 'rails'},
+    {:id => 23, :username => 'django'},
+    {:id => 41, :username => 'nodejs'}
+]
+```
+
+If I call `users.pluck(:username)`, I'll get back an array that contains just those usernames. 
+
+```ruby
+users.pluck(:username)
+# => ['rails', 'django', 'nodejs']
+```
+
+It will go through the array, it will iterate through each item, and it will return back to me the value that corresponds to the key that I've given it.
+
+If I ask it for two different keys, then it will give me an array of arrays.
+
+```ruby
+users.pluck(:username)
+# => [[21, 'rails'], [23, 'django'], [41, 'nodejs']]
+```
+
+You can see the first item in the array is 21, rails. That's the ID and the username, now where this comes in useful, is that in Rails 4, if we had users, now if we get a scope back, we get all our users, but then we wanted to also pluck the username from those users, we had to use pluck on ActiveRecord.
+
+```ruby
+# in Rails 4
+users = User.all
+# Sends SQL : SELECT * FROM users
+```
+
+And that would send new SQL, and that was the only way to do it, even though we already had all these users loaded, if we wanted to use pluck, we had to go use ActiveRecord, and send another query to the database.
+
+```ruby
+# in Rails 4
+User.pluck(:username)
+# Sends SQL : SELECT username FROM users
+
+# => ['rails', 'django', 'nodejs']
+```
+
+The other choice was to go through the users, and do something like map, in order to get all these values back.
+
+In Rails 5, we don't have to go back to the database again. If we already have a scope loaded, so, for example, we have `users = User.all`. 
+
+```ruby
+# in Rails 5
+users = User.all
+# Sends SQL : SELECT * FROM users
+```
+
+Well now, we can call pluck on that enumerable, on that array of objects, and we can ask it for username.
+
+```ruby
+# in Rails 5
+User.pluck(:username)
+# No additional query needed!
+
+# => ['rails', 'django', 'nodejs']
+```
+
+And it doesn't fire off another SQL query, it does what we would expect, it goes into the users, it iterates through them and it returns the values that we're looking for. 
+
+So now, we can call pluck on either an ActiveRecord object or on an array or a hash, and it doesn't make any difference.
+
+It still returns back the values that we're looking for.
+
+For more information about `Enumerable#pluck` see the Ruby Enumerable#pluck [documentation](http://api.rubyonrails.org/classes/Enumerable.html#method-i-pluck).
 
