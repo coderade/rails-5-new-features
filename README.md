@@ -812,7 +812,7 @@ ActiveRecord::Base.include(ActsAsCoolFeature)
 ``` 
 As we can see on the above example, if I want to add that into my models and I want to have it in all of my models I would have ActiveRecord Base include ActsAsCoolFeature. Now, all of my models have ActsAsCoolFeature built into them.
 
-Pretty cool, right? Except that this technique is called [monkey patching]() and it refers to modifications of a class at run-time with the intent of changing their behavior. 
+Pretty cool, right? Except that this technique is called [monkey patching](http://stackoverflow.com/questions/394144/what-does-monkey-patching-exactly-mean-in-ruby) and it refers to modifications of a class at run-time with the intent of changing their behavior. 
 By patching ActiveRecord Base directly we're patching it for everyone that uses it. If we're running a small app that's not a big deal, but if we're using gems, plug-ins, engines, or writing complex code, each one of those is potentially expecting to have a clean ActiveRecord Base to work with and our module could interfere with their work.
 
 Instead, in Rails 5 with ApplicationRecord we have the ability to include the class in our intermediary class, ApplicationRecord, and not in ActiveRecord Base. ActiveRecord Base stays a pristine class that everyone can use. Our features included, but only for our models which inherit from ApplicationRecord. 
@@ -1015,3 +1015,77 @@ It's the same thing, but it doesn't have find at the beginning, It makes it easy
 The difference here, is that product.in batches does not fire off SQL and go out and retrieve the objects and instantiate them and put them in an array, Instead it returns a relation to batch and that way when we're inside the block I can call `batch.update_all` and it fires off that single SQL query to update all 1,000 records at one time.
 
 Now I also have the ability to tell the batch that it should go out and retrieve those records and do something else with them, if I want to, but it doesn't presuppose that I want to do that, it waits and allows me to make that choice inside the block and that makes in batches a nice option for us to have.
+
+
+### ActiveRecord Secure Tokens
+
+Ruby on Rails 5 provides a new feature to make it easy to create unique random tokens for use in our models. Secure tokens have become common in modern web applications. 
+You might use them for: 
+
+* Invitations
+* User registrations, 
+* Resetting lost user passwords,
+* Token-based authentication.
+
+In the past, everyone had to craft their own custom solution for this, Rails 5 wants to make the process a little easier and more secure by providing a standard way to create and manage secure tokens.
+
+There are two parts to the process. The first is getting the columns set up on your database, and you can do that either from the command line, using rails generate or by writing a migration.
+
+
+```
+rails g model Invitation auth_token:token
+```
+###### Rails generate command
+
+```ruby
+class CreateInvitations < ActiveRecord::Migration
+    def change
+        create_table :invitation do |t|
+            t.token :auth_token
+        end
+    end
+end
+```
+###### Migration class
+
+In both cases, you can see that I'm providing the column name, which is gonna be my token name, and I made that auth_token, and then the type of column is going to be token. 
+That's a new type that's introduced in Ruby on Rails 5, so instead of having a string, or an integer, or a date time column, we tell it that it's a token column.
+
+Once we have our database set up and migrated then in our model we can add the method `has_secure_token`and provide the name of our token. 
+
+```ruby
+class Invitation < ActiveRecord::Base
+    has_secure_token(:auth_token)
+end
+```
+
+If we don't provide any argument, it defaults to token, once we've got that, our model will now automatically generate secure tokens for auth token.
+
+```ruby
+invite = Invitation.new
+invite.save
+invite.auth_token # => "05oplsfvvkwXI3q2349Oains"
+```
+We create a new invite and we save it to the database, if we ask that object for auth token, you can see that it will automatically have created this random secure string for us. 
+
+
+If we wanna refresh that token to something new, then we can call `regenerate_auth_token`: 
+
+```ruby
+invite.regenerate_auth_token # => true
+```
+
+And it will regenerate that token and give us a new random string:
+
+```ruby
+invite.auth_token # => "hnXBv7R2XValsgwga1atTrIX"
+```
+Notice that that's a bit of a dynamic method. `regenerate_auth_token is based` on the name of my token, if my token had been named something like invite code, well then the name of the method would be `regenerate_invite_code`, so it's `regenerate_` followed by the name of your token and that would regenerate it for you, so these secure tokens that it generates are gonna be random, 24-character tokens.
+
+Under the hood, at least at the moment, it uses secure random base 58. That could certainly change in the future. If that wasn't deemed to be appropriate, but at the moment 24-characters using base 58, because of the size of the token, and the number of characters, collisions and race conditions are possible but they're unlikely. 
+
+To prevent this, you're encouraged to use a unique index on the database column to ensure that the value is always unique, now the Rails migration, using that token type automatically adds that unique index for you, but if you create your own migration, or if you're using an existing string column, then you'll wanna make sure that you add your own unique index to that column.
+
+It's an unlikely scenario, but if you add it then you'll never need to worry, and that's all there is to being able to use secure tokens in your ActiveRecord models.
+
+You can find out more about the ActiveRecord Secure Tokens at the your Rails documentation [page](http://api.rubyonrails.org/classes/ActiveRecord/SecureToken/ClassMethods.html).
