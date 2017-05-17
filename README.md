@@ -1,6 +1,8 @@
 # Rails 5 new features
 
-This project show the new features, improvements and other important changes to Ruby on Rails version 5. It will shows how to use the most important features of Rails 5, including Action Cable, Action Controller Renderer, Turbolinks, the Active records, Attributes API, and how to use Rails exclusively as a Json API, and will discuss too the many other smaller changes in improvements such as the Rails command Router, new Date and Time methods, Secure Tokens, and changes to parameters.
+This project show the new features, improvements and other important changes to Ruby on Rails version 5. It will shows how to use the most important features of Rails 5, including Action Cable, Action Controller Renderer, Turbolinks, the Active records, Attributes API and how to use Rails exclusively as a JSON API.
+
+This project will discuss too the many other smaller changes in improvements such as the Rails command Router, new Date and Time methods, Secure Tokens and changes to parameters.
 
 In addition, it will show the features that are being deprecated or completely removed. This is an important topic if you have an existing project that uses any of these features.
 
@@ -43,18 +45,18 @@ In addition, it will show the features that are being deprecated or completely r
 
 ## About Ruby on Rails 5
 
-* First major release in three years - That was for the version four, and it's been about a year and a half since Rails 4.2 came out.
+* First major release in three years - That was for the version four and it's been about a year and a half since Rails 4.2 came out.
 * Faster
 * Less memory usage
 * Less time doing garbage collection (GC)
 * Requires 2.2.2 or greater
 * [GC of symbols (Incremental GC)](https://www.sitepoint.com/symbol-gc-ruby-2-2/)
-* **Incremental GC: ~2x faster** - Previously, the Ruby would periodically go through all the objects in memory, mark the ones that were still fresh or being used, and then make a second pass to remove the unmarked objects from memory.
+* **Incremental GC: ~2x faster** - Previously, the Ruby would periodically go through all the objects in memory, mark the ones that were still fresh or being used and then make a second pass to remove the unmarked objects from memory.
 The problem with this is that that GC sweep through memory takes some time, it can slow down your code while it's happening. Ruby 2.1 improved the speed of this process somewhat by classifying objects in memory based on the likelihood they would need to be garbage-collected, but a large collection could still slow things down. Well, now, in Ruby 2.2, we get incremental GC and the basic idea is to break up the scanning and removal of objects so that the process happens incrementally, not all in one big sweep, so while the total work and the total time may still be the same, it's broken up among many smaller operations.
-* **Optimizes common operations** - The core team has optimized common operations, the code has fewer dependencies on other code in libraries, and there are fewer object allocations to memory. Now, that may seem like a small point that doesn't make much difference, but, as one example, link and URL generation in Ruby on Rails 5 is 44 percent faster.
+* **Optimizes common operations** - The core team has optimized common operations, the code has fewer dependencies on other code in libraries and there are fewer object allocations to memory. Now, that may seem like a small point that doesn't make much difference, but, as one example, link and URL generation in Ruby on Rails 5 is 44 percent faster.
 * Fewer dependencies
 * Fewer object allocations
-* **Development environment is faster** - The development environment uses the Puma web server now, instead of using WEBrick, and the development mode used to check the modification time of all of your files in your project to know if anything had changed too, so that it could automatically reload the development environment for you. But now, there is a file system monitor, which notifies Rails whenever something changes. There is no more requirement to check the modification times of all the files. And that makes development feel snappier when you are working. And on top of these performance improvements.
+* **Development environment is faster** - The development environment uses the Puma web server now, instead of using [Webrick](https://github.com/ruby/webrick) and the development mode used to check the modification time of all of your files in your project to know if anything had changed too, so that it could automatically reload the development environment for you. But now, there is a file system monitor, which notifies Rails whenever something changes. There is no more requirement to check the modification times of all the files. And that makes development feel snappier when you are working. And on top of these performance improvements.
 
 
 ## Major features
@@ -78,7 +80,7 @@ The problem with this is that that GC sweep through memory takes some time, it c
 
 * Data exchanged is independent of connection (each time a communication needs to happen, a new connection is created)
 * Wrapped data: request headers + data
-* Headers can 1-2KB large (even if the data is tiny) - includes things like cookies, that the browser has stored. Even if the data is tiny, it still has to wrap it in these headers, and the server overhead goes both ways.
+* Headers can 1-2KB large (even if the data is tiny) - includes things like cookies, that the browser has stored. Even if the data is tiny, it still has to wrap it in these headers and the server overhead goes both ways.
 * Independence comes at cost of overhead
 * Request-response cycle communication
 
@@ -102,12 +104,12 @@ The problem with this is that that GC sweep through memory takes some time, it c
 
 * Monopolizes a serve connection - No one else can talk to the server across that connection while it's in use
 * Even when nothing much is happening and a lot of data's not being sent
-* HTTP request-response cycle can serve more clients - So when I make a request for a webpage, the server sends me the webpage, and then while I'm reading the webpage and deciding what I want my next decision to be, my next request to the server, it can go ahead and serve other clients in the meantime.
-* No page caching - Different of the HTTP requests, with something like a webpage, that can be cached and sent very quickly back to the client. With WebSockets we have to dynamically respond all the time, and in fact, most applications just simply
+* HTTP request-response cycle can serve more clients - So when I make a request for a webpage, the server sends me the webpage and then while I'm reading the webpage and deciding what I want my next decision to be, my next request to the server, it can go ahead and serve other clients in the meantime.
+* No page caching - Different of the HTTP requests, with something like a webpage, that can be cached and sent very quickly back to the client. With WebSockets we have to dynamically respond all the time and in fact, most applications just simply
 * Most applications do not require realtime communication
 
 
-With WebSockets we have to dynamically respond all the time, and in fact, most applications just simply do not require real-time communication, so ActionCable and WebSockets is a great solution for people who need real-time communication, but if you don't need it then you're probably better going off with a more traditional HTTP model.
+With WebSockets we have to dynamically respond all the time and in fact, most applications just simply do not require real-time communication, so ActionCable and WebSockets is a great solution for people who need real-time communication, but if you don't need it then you're probably better going off with a more traditional HTTP model.
 
 #### Using ActionCable
 
@@ -134,7 +136,7 @@ Rails.application.routes.draw do
 end    
 ```
 
-Next, we're gonna need to create our channel, and a new Rails 5 app should have a directory for channels where you can put this code, and you're gonna create channels in much the same way that you normally create controllers, so while they're not exactly the same, you'll find that they are similar, so here you can see I've got a class defined for `ChatRoomChannel` that inherits from `ApplicationCable Channel`, and then you can see that I have a subscribed action, and a speak action.
+Next, we're gonna need to create our channel, and a new Rails 5 app should have a directory for channels where you can put this code and you're gonna create channels in much the same way that you normally create controllers, so while they're not exactly the same, you'll find that they are similar, so here you can see I've got a class defined for `ChatRoomChannel` that inherits from `ApplicationCable Channel` and then you can see that I have a subscribed action and a speak action.
 
 ```ruby
 # app/channels/chat_room_channel.rb
@@ -152,11 +154,11 @@ class ChatRoomChannel < ApplicationCable::Channel
 end    
 ``` 
 
-There will usually be an unsubscribed action as well, subscribed and unsubscribed are the two standard actions. These two actions do whatever code you want to do whenever a user subscribes or unsubscribes from a channel. Often what you wanna do when they're subscribing is to start streaming data to them across the channel, and you can see that that's what I'm doing in my subscribe method when I'm calling stream from. For this overview I created The speak method, that is a custom action of my own creation, on it I've added just a basic example, when the speak action is called, then the ActionCable server is going to broadcast a message on the chat room channel, and you can see that I'm passing in whatever I want that data to be.
+There will usually be an unsubscribed action as well, subscribed and unsubscribed are the two standard actions. These two actions do whatever code you want to do whenever a user subscribes or unsubscribes from a channel. Often what you wanna do when they're subscribing is to start streaming data to them across the channel and you can see that that's what I'm doing in my subscribe method when I'm calling stream from. For this overview I created The speak method, that is a custom action of my own creation, on it I've added just a basic example, when the speak action is called, then the ActionCable server is going to broadcast a message on the chat room channel and you can see that I'm passing in whatever I want that data to be.
 
-Anyone that's streaming from that channel anyone who's subscribed, will be sent that message immediately, once that we have our chat room channel set up, and we have subscribed, unsubscribed and any of the custom actions that we wanna have inside there. 
+Anyone that's streaming from that channel anyone who's subscribed, will be sent that message immediately, once that we have our chat room channel set up and we have subscribed, unsubscribed and any of the custom actions that we wanna have inside there. 
 
-Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so, on the bellow example you see I have variable for App, and then I'm setting `App.cable` equal to `ActionCable.createConsumer`, this gives our JavaScript object all the features that it needs to communicate with the server.
+Then we're ready to set up the JavaScript side of things. In your JavaScript, you'll need to set up the cable like so, on the bellow example you see I have variable for App and then I'm setting `App.cable` equal to `ActionCable.createConsumer`, this gives our JavaScript object all the features that it needs to communicate with the server.
 
 ```javascript
 // app/assets/javascripts/cable.js
@@ -171,7 +173,7 @@ Then we're ready to set up the JavaScript side of things. In your JavaScript, yo
 }).call(this);
 ``` 
 
-Once we have it set up, we can use it to set up a room on our app object, which creates a new subscription to the chat room channel. Here you can see I'm setting `App.room` equal to `App.cable` subscriptions create, so I'm creating a new subscription and I'm assigning it to room. I'm gonna call it `ChatRoomChannel`, and inside you'll see that I'm defining a number of functions. I've got functions for connected, disconnected, received, and speak.
+Once we have it set up, we can use it to set up a room on our app object, which creates a new subscription to the chat room channel. Here you can see I'm setting `App.room` equal to `App.cable` subscriptions create, so I'm creating a new subscription and I'm assigning it to room. I'm gonna call it `ChatRoomChannel` and inside you'll see that I'm defining a number of functions. I've got functions for connected, disconnected, received and speak.
 
 ```javascript
 
@@ -190,11 +192,11 @@ App.room = App.cable.subscriptions.create(
     }
 );
 ``` 
-**connected**, **disconnected** and **received** are standard functions in `ActionCable` that you'll probably always want to have. Whenever I'm connected, the JavaScript code in the connected function will execute, whenever I'm disconnected the code in the disconnected function will execute, and the received will gets called anytime data is received from this channel. 
+**connected**, **disconnected** and **received** are standard functions in `ActionCable` that you'll probably always want to have. Whenever I'm connected, the JavaScript code in the connected function will execute, whenever I'm disconnected the code in the disconnected function will execute and the received will gets called anytime data is received from this channel. 
 
 In the above example, in my received function I'm just calling a simple JavaScript alert to display whatever message is received. You could instead replace data on the page, or add the data to some existing content, for example, if this was a real chat room, you'd probably want to append the message received to the end of the things that already been said in the chat room.
 
-The Speak is a custom function of our own creation, it can be called anything we like, but notice that what it does, is it calls perform speak. This is how we call the controller action speak that we created earlier, send it data, and that's the message that we wanna speak. Remember, that action just broadcast our message to anyone who subscribed to this same channel.
+The Speak is a custom function of our own creation, it can be called anything we like, but notice that what it does, is it calls perform speak. This is how we call the controller action speak that we created earlier, send it data and that's the message that we wanna speak. Remember, that action just broadcast our message to anyone who subscribed to this same channel.
 
 Now we've defined all of our Ruby actions on the server side and all of our JavaScript functions on the client side. 
 
@@ -215,7 +217,7 @@ App.room.speak('Hello ActionCable');
 //Triggers App.room.received on all subscribers
 ``` 
 
-Let's review what the above code looks like: it calls `this.perform('speak')`, and it passes along our message That then in turn calls `ChatRoomChannel` speak. Which in turn calls `ActionCable` server broadcast and sends our message out to that channel and anyone who subscribed to it is going to get it.
+Let's review what the above code looks like: it calls `this.perform('speak')` and it passes along our message That then in turn calls `ChatRoomChannel` speak. Which in turn calls `ActionCable` server broadcast and sends our message out to that channel and anyone who subscribed to it is going to get it.
 
 It's gonna be streamed to that WebSocket, once that's received by the client, it's gonna trigger `App.room.received` on all the subscribers, which in turn calls alert and alerts with our message, so that we see what the message was.
 
@@ -256,13 +258,13 @@ ApplicationController.render('products/index')
 
 Another nice shorthand is that if instead of calling render on ApplicationController, we call it on one of our custom controllers which inherits from ApplicationController. Then we don't even have to provide the directory for where to find the template.
 
-It knows that it's going to look in the products directory, because we're working with the ProductsController, so that's where it's going to look by default, for this index template, and just like our controllers we don't have to just render the html.
+It knows that it's going to look in the products directory, because we're working with the ProductsController, so that's where it's going to look by default, for this index template and just like our controllers we don't have to just render the html.
 
 ```ruby
 ProductsController.render('index')
 ```
 
-We can render a json, for example. If we wanted to provide a json back as a snippet to action cable, we can do that just like this:
+We can render a JSON, for example. If we wanted to provide a JSON back as a snippet to action cable, we can do that just like this:
 
 ```ruby
 ApplicationController.render(
@@ -270,7 +272,7 @@ ApplicationController.render(
 )
 ```
 
-The other possibilities for things you can render are templates, actions, partials, file, inline, plain, text, html, json, js, and xml.
+The other possibilities for things you can render are templates, actions, partials, file, inline, plain, text, html, json, js and xml.
 
 Just like you're used to having in your controllers, you can pass local variables to the templates, just like you normally would.
 
@@ -300,7 +302,7 @@ ApplicationController.render(
 
 In case the difference between assigns and locals is not completely clear, here's another example that shows them both being applied to the rendering of a bit of inline ERB, so my template is that inline ERB.
 
-You can see that in the first blank I have an instance variable for version, and a local variable then in the second blank for adjective, so I'm using assigns to set the instance variable, I'm using locals to set the local variable. 
+You can see that in the first blank I have an instance variable for version and a local variable then in the second blank for adjective, so I'm using assigns to set the instance variable, I'm using locals to set the local variable. 
 
 ```ruby
 (
@@ -332,7 +334,7 @@ We're gonna be setting up our application from the start so that it omits a lot 
 
 #### Why Rails as JSON API?
 
-* **No need for templates, HTML, CSS and JavaScript** - there's no needed for templates, HTML, CSS, and JavaScript, all that can be left out, and when we use our generators in Rails it's gonna skip generating the views, the helpers and the assets whenever we create a new resource.
+* **No need for templates, HTML, CSS and JavaScript** - there's no needed for templates, HTML, CSS and JavaScript, all that can be left out and when we use our generators in Rails it's gonna skip generating the views, the helpers and the assets whenever we create a new resource.
 * **Most application logic is outside the View layer** - most of the application logic is performed inside our controllers and models and not inside the view, so we can let the client just simply be our view layer for us
 * Less controller and middleware code - when we go to create a new resource, the Rails as an API is going to leave out modules which are primarily useful for browser applications, like cookie support. It won't put jQuery or turbolinks into our gem file because it knows we won't be using them.
 * Configured for API-style applications
@@ -421,9 +423,9 @@ For more information of how use Rails for API-only Applications, see the officia
 
 ### Turbolinks 5
 
-Turbolinks was first introduced in Ruby on Rails 4. This version of Turbolinks has now been renamed as [Turbolinks Classic](https://github.com/turbolinks/turbolinks-classic), and version five, which comes with Ruby on Rails 5, is a ground up rewrite with a new flow and new events, but which still uses the same core idea as Turbolinks Classic.
+Turbolinks was first introduced in Ruby on Rails 4. This version of Turbolinks has now been renamed as [Turbolinks Classic](https://github.com/turbolinks/turbolinks-classic) and version five, which comes with Ruby on Rails 5, is a ground up rewrite with a new flow and new events, but which still uses the same core idea as Turbolinks Classic.
 
-The new version is faster than the old one, and also offers the ability to do partial replacements of webpages. We'll take a look at that feature in a moment.
+The new version is faster than the old one and also offers the ability to do partial replacements of webpages. We'll take a look at that feature in a moment.
 
 #### Why Turbolinks?
 
@@ -495,11 +497,11 @@ The turbolinks load event fires once on the initial page load and then again aft
 
 ##### Turbolinks Partial Replacement
 
-The first version of Turbolinks simply replaced everything within the body when a link was clicked, that kept the HTML head, CSS and JavaScript, but the bulk of the page was still reloading, and you can continue to use Turbolinks in that way and you'll get a big speed boost by not reloading that extra stuff, but the new version of Turbolinks that's in Ruby on Rails 5 has an additional feature.
+The first version of Turbolinks simply replaced everything within the body when a link was clicked, that kept the HTML head, CSS and JavaScript, but the bulk of the page was still reloading and you can continue to use Turbolinks in that way and you'll get a big speed boost by not reloading that extra stuff, but the new version of Turbolinks that's in Ruby on Rails 5 has an additional feature.
 
 You can reload only parts of a page by marking content as either **permanent** or as **temporary**. 
 
-Look the below example, let's imagine that we have a page and inside the body I have three divs, one with an ID of nav, one with an ID of flash, and one with an ID of comments. 
+Look the below example, let's imagine that we have a page and inside the body I have three divs, one with an ID of nav, one with an ID of flash and one with an ID of comments. 
 
 ```html
 <body>
@@ -544,7 +546,7 @@ Like the third example, if I instead tell it to keep the flash, well then the fl
 
 On the Last example, you can see that I'm updating everything including the nav by using flush true. This is still using Turbolinks, it's not opting out of Turbolinks, it's just telling it that all the parts of the page should be replaced, the entire body gets replaced in that case.
 
-The below example show how the things are done inside your controller. You can also do the same thing in your Javascript, this is essentially what's happening under the hood, when the Ajax makes this call. That is that we're calling `Turbolinks.visit` comments, and then we can provide any of those options we just saw.
+The below example show how the things are done inside your controller. You can also do the same thing in your Javascript, this is essentially what's happening under the hood, when the Ajax makes this call. That is that we're calling `Turbolinks.visit` comments and then we can provide any of those options we just saw.
 
 ```ruby
 # Keep #nav, update all other parts of page
@@ -560,7 +562,7 @@ Turbolinks.visit('/comments', :keep => 'flash')
 Turbolinks.visit('/comments', :flush => true)
 ``` 
 
-Change, keep, flush, as well we can use append and prepend, and those do the exact same thing. If you wanna find out more about Turbolinks. Learn more about some of the configuration options that are available to you. 
+Change, keep, flush, as well we can use append and prepend and those do the exact same thing. If you wanna find out more about Turbolinks. Learn more about some of the configuration options that are available to you. 
 
 You can find out more about it at the Turbolinks official [repository](https://github.com/turbolinks/turbolinks).
 
@@ -1012,4 +1014,4 @@ It's the same thing, but it doesn't have find at the beginning, It makes it easy
 
 The difference here, is that product.in batches does not fire off SQL and go out and retrieve the objects and instantiate them and put them in an array, Instead it returns a relation to batch and that way when we're inside the block I can call `batch.update_all` and it fires off that single SQL query to update all 1,000 records at one time.
 
-Now I also have the ability to tell the batch that it should go out and retrieve those records and do something else with them, if I want to, but it doesn't presuppose that I want to do that, it waits and allows me to make that choice inside the block and that makes in batches a nice option for us to have
+Now I also have the ability to tell the batch that it should go out and retrieve those records and do something else with them, if I want to, but it doesn't presuppose that I want to do that, it waits and allows me to make that choice inside the block and that makes in batches a nice option for us to have.
