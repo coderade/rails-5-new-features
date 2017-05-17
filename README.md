@@ -36,6 +36,7 @@ In addition, it will show the features that are being deprecated or completely r
     - [Rails Command router](#rails-command-router)
     - [Application Record and Application Job](#application-record-and-application-job) 
     - [Integer methods: #positive? and #negative?](#integer-methods-positive-and-negative)
+    - [Date and time improvements](#date-and-time-improvements)
 
 
 
@@ -723,7 +724,7 @@ Post.published.or(Post.pending).or(Post.recent)
 
 There are some guidelines that you need to keep in mind, though.
 
-* First, the argument that you pass  Must be an `ActiveRecord::Relation` (query or scope) - That's why I had to use post dot where on the above example, again, because we needed to created a `ActiveRecord::Relation`
+* First, the argument that you pass  Must be an `ActiveRecord::Relation` (query or scope) - That's why I had to use `Post.where` on the above example, again, because we needed to created a `ActiveRecord::Relation`
 * The arguments must be the same model - So if my exterior query has to do with post, then the thing that goes inside or should also be regarding Post. 
 * And the arguments must differ only by their `#where` or their `#having` clause - that's because that's what's going on under the hood. `ActiveRecord::Relation#or` is taking any where or having clause that we pass in on a scope, and it's appending them to the existing where and having clause using or.
 * Should not use `#limit`, `#offset`, or `#distinct` - you can still use limit, offset, and distinct on the exterior scope, but not on the relation that's being passed into or.
@@ -858,3 +859,107 @@ When we call positive question mark or negative question on an integer, they ret
 While these are two very useful methods, they are also going to be a superfluous part of Rails soon, and that's because these methods are built-in methods in Ruby 2.3 which was released in December of 2015. 
 
 So really what Rails is doing here is just offering these methods early for Ruby 2.2 users and if you remember that's the base requirement for using Ruby on Rails five is Ruby 2.2.2, so if you meet that requirement you still have access to these methods and if you use Ruby 2.3 then those are going to be built-in methods for you.
+
+
+### Date and time improvements
+
+Ruby on Rails 5 provides new methods for working with date and time.
+
+Ruby on Rails has new methods for next day and previous day (`#next_day`, `#prev_day`), these do the same thing as yesterday and tomorrow, which were existing methods, but, because their support for next week and next year it makes sense to have a parallel version for day. It was always a little odd that you could ask for next year and next week, but you couldn't ask for next day, you had to ask for tomorrow instead. So now they exist and you can use either one.
+
+Ruby on Rails also gained the concept of a weekday and a weekend, So now you can ask for next weekday and previous weekday (`#next_weekday`, `#prev_weekday`) and you'll get the following day unless it's on a weekend. So, for example, if it's a Friday and we ask for next week day, we don't get back Saturday we get back Monday. 
+
+To correspond with those, we have some query methods, on weekend and on weekday (`#on_weekend?`, `#on_weekday?`) which will tell us whether something is on a weekday or weekend. 
+
+As I mentioned, there are some existing methods for next week and previous week (`#next_week`, `#prev_week`), those have just gained a new ability, which is they have the `same_time` argument. 
+
+Then, time gets days in year as a new method (`Time.days_in_year(year)`), it already had a `days_in_month` method, this matches that and it defaults to the current year.
+
+Let's say that I have the current time. And, let's say that the current time is Friday, March 18th, 2015 at 12:26 UTC. So if I ask for `Time.current.next_day`, then it returns tomorrow. It returns the following day, which is Saturday the 19th.
+
+```ruby
+Time.current
+# => Fri, 18 Mar 2016 12:26:11 UTC +00:00
+
+Time.current.next_day
+# => Fri, 19 Mar 2016 12:26:11 UTC +00:00
+
+Time.current.prev_day
+# => Fri, 17 Mar 2016 12:26:11 UTC +00:00
+
+Time.current.next_weekday
+# => Fri, 21 Mar 2016 12:26:11 UTC +00:00
+
+Time.current.prev_weekday
+# => Fri, 17 Mar 2016 12:26:11 UTC +00:00
+```
+
+The previous day returns Thursday, March 17th, both at the same time of day. If I ask for next weekday, then because it was on Friday, it doesn't return Saturday to me it jumps to Monday and, it returns Monday at the same time to me.
+If I ask for previous weekday, well, the previous weekday is the same thing as previous day so it returns Thursday, if the current time had been a Monday, then previous weekday would, of course, return a Friday.
+
+We have the ability to query those with on weekday and on weekend the current time is on a weekday, it's true. 
+
+```ruby
+Time.current
+# => Fri, 18 Mar 2016 12:26:11 UTC +00:00
+
+Time.current.on_weekday?
+# => true
+
+Time.current.next_day.on_weekday?
+# => false
+
+Time.current.on_weekend?
+# => false
+
+Time.current.next_day.on_weekend?
+# => true
+```
+
+The Current next day, which is Saturday, is that a weekday? No, it's not. But if we ask on weekend, `Time.current` is not on the weekend but `Time.current.next_day` which is Saturday is on the weekend.
+
+We also can take a look at the changes to next week. So again, let's say I had the same time. 
+
+```ruby
+Time.current
+# => Fri, 18 Mar 2016 12:26:11 UTC +00:00
+
+Time.current.next_week?
+# => Fri, 25 Mar 2016 00:00:00 UTC +00:00
+
+Time.current.next_week(:thursday)
+# => Fri, 24 Mar 2016 00:00:00 UTC +00:00
+
+Time.current.next_week(:friday, :same_time => true)
+# => Fri, 25 Mar 2016 12:26:11 UTC +00:00
+
+```
+Look the above example, If I ask for next week, I get the next week, I get Friday, but notice what happened to the time, the time got reset to midnight. That's what next week does, next week also accepts an argument. So, we can ask for a certain day of the week.
+
+`Time.current.next_week(:thursday)` returns Thursday of next week. But, again, the time goes to Midnight. That's the way it behaved in Rails four and the way it still works in Rails 5. 
+
+However, in Rails 5, we now get a new option that we can pass in of same time true, in order to use this `same_time` argument, you must provide the day of the week that you wanted. It's not optional, you can't leave it out. So in this case, I have time dot current dot next week and I'm asking for Friday with the same time option.
+
+I mentioned already that time had a days in month method built in, it allows us to has for how many days are in a month. So, `Time.days_in_month(1)` tells me how many days are in the month of January, which is 31 and I can ask it for February and I can provide an optional year and it'll tell me how many days are in that year's month. In February, that makes a difference because sometimes it has has 28 and sometimes it has 29 days, I can also do the same thing with days in year. 
+
+By default, it'll return the current year, if I pass in an argument of 2016, I get back the same result. But, if I were to pass in 2015, which is not a leap year, then I get back 365.
+
+
+```ruby
+Time.days_in_month(1)
+# => 31
+
+Time.days_in_month(2, 2017)
+# => 28
+
+Time.days_in_year
+# => 365
+
+Time.days_in_year(2016)
+# => 366
+
+```
+
+Each one of these examples is a small improvement to Rails, but taken all together they make date and time easier to work with.
+
+
