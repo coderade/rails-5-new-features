@@ -49,6 +49,8 @@ In addition, it will show the features that are being deprecated or completely r
     - [Enumerable#without](#enumerablewithout)
     - [Enumerable#pluck](#enumerablepluck)
     - [ArrayInquirer](#arrayinquirer)
+    - [Per-Form CSRF tokens](#per-form-csrf-tokens)
+    - [belongs_to Requires Parent](#belongs_to-requires-parent)
 
 
 
