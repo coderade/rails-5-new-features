@@ -144,7 +144,7 @@ Rails.application.routes.draw do
 end    
 ```
 
-Next, we're gonna need to create our channel, and a new Rails 5 app should have a directory for channels where you can put this code and you're gonna create channels in much the same way that you normally create controllers, so while they're not exactly the same, you'll find that they are similar, so here you can see I've got a class defined for `ChatRoomChannel` that inherits from `ApplicationCable Channel` and then you can see that I have a subscribed action and a speak action.
+Next, we're gonna need to create our channel and a new Rails 5 app should have a directory for channels where you can put this code and you're gonna create channels in much the same way that you normally create controllers, so while they're not exactly the same, you'll find that they are similar, so here you can see I've got a class defined for `ChatRoomChannel` that inherits from `ApplicationCable Channel` and then you can see that I have a subscribed action and a speak action.
 
 ```ruby
 # app/channels/chat_room_channel.rb
@@ -1294,7 +1294,7 @@ For example, you could do it with reject:
 users.reject {|u| paid_users.include?(u)}
 ```
 
-Or if you have two arrays, you could do it using subtraction, so I could have `users - paid_users`.
+Or if you have two arrays, you could do it using subtraction, so I could have:
 
 ```ruby
 users - paid_users
@@ -1304,7 +1304,7 @@ users - [current_user]
 
 But it can be a bit of hassle when you have only a single user because then you have to make an array in order to get the subtraction to work. 
 
-Using without is cleaner, and it clearly states what we're trying to achieve, and as a bonus it works with arrays, with a list of arguments, and with a single item. Without is a nice addition. It's easy to use and it makes your code clearer.
+Using without is cleaner and it clearly states what we're trying to achieve and as a bonus it works with arrays, with a list of arguments and with a single item. Without is a nice addition. It's easy to use and it makes your code clearer.
 
 ```ruby
 users.without(paid_users)
@@ -1327,7 +1327,7 @@ They don't really care which one it is, they want to do the same thing on both o
 Let see an example:
 
 
-Let's say that I have an array of users, and inside that array I have three different hashes, and inside the hashes, I have an ID and a username for each of the users.
+Let's say that I have an array of users and inside that array I have three different hashes and inside the hashes, I have an ID and a username for each of the users.
 
 
 ```ruby
@@ -1345,7 +1345,7 @@ users.pluck(:username)
 # => ['rails', 'django', 'nodejs']
 ```
 
-It will go through the array, it will iterate through each item, and it will return back to me the value that corresponds to the key that I've given it.
+It will go through the array, it will iterate through each item and it will return back to me the value that corresponds to the key that I've given it.
 
 If I ask it for two different keys, then it will give me an array of arrays.
 
@@ -1362,7 +1362,7 @@ users = User.all
 # Sends SQL : SELECT * FROM users
 ```
 
-And that would send new SQL, and that was the only way to do it, even though we already had all these users loaded, if we wanted to use pluck, we had to go use ActiveRecord, and send another query to the database.
+And that would send new SQL and that was the only way to do it, even though we already had all these users loaded, if we wanted to use pluck, we had to go use ActiveRecord and send another query to the database.
 
 ```ruby
 # in Rails 4
@@ -1372,7 +1372,7 @@ User.pluck(:username)
 # => ['rails', 'django', 'nodejs']
 ```
 
-The other choice was to go through the users, and do something like map, in order to get all these values back.
+The other choice was to go through the users and do something like map, in order to get all these values back.
 
 In Rails 5, we don't have to go back to the database again. If we already have a scope loaded, so, for example, we have `users = User.all`. 
 
@@ -1382,7 +1382,7 @@ users = User.all
 # Sends SQL : SELECT * FROM users
 ```
 
-Well now, we can call pluck on that enumerable, on that array of objects, and we can ask it for username.
+Well now, we can call pluck on that enumerable, on that array of objects and we can ask it for username.
 
 ```ruby
 # in Rails 5
@@ -1394,9 +1394,114 @@ User.pluck(:username)
 
 And it doesn't fire off another SQL query, it does what we would expect, it goes into the users, it iterates through them and it returns the values that we're looking for. 
 
-So now, we can call pluck on either an ActiveRecord object or on an array or a hash, and it doesn't make any difference.
+So now, we can call pluck on either an ActiveRecord object or on an array or a hash and it doesn't make any difference.
 
 It still returns back the values that we're looking for.
 
 For more information about `Enumerable#pluck` see the Ruby Enumerable#pluck [documentation](http://api.rubyonrails.org/classes/Enumerable.html#method-i-pluck).
 
+
+### ArrayInquirer
+
+
+One of the major improvements the Rails 5 is the addition of the class ArrayInquirer. 
+ArrayInquirer provides a convenient syntax for checking the contents of an array, it works a lot like StringInquirer. 
+
+You may not have worked with StringInquirer before, so let me first demonstrate how that works.
+
+Let's say that we have a string, such as active. We can take that string and we can pass it as an argument to `ActiveSupport StringInquirer.new` to get back a StringInquirer object. 
+
+```ruby
+# String Inquire example
+status = ActiveSupport::StringInquirer.new('active')
+```
+
+That object is going to work just like a string in almost every single case
+
+```ruby
+put status      # => 'active'
+```
+
+But it's gonna have one additional ability, which is that we can acquire about its contents and we can do that by using:
+
+```ruby
+status.active?     # => true
+```
+
+The StringInquirer will take whatever value we've passed in before the question mark and compare it against the value of the string, so it returns true because active is in fact the value of the string. 
+
+```ruby
+status.pending?     # => false
+```
+
+If I call status.pending?, it returns false, because the value of the string is not pending, so it's a little bit of a magic method name. Anything that would be put before that question mark is going to be compared against the value of the string.
+
+Rails actually uses this for `Rails.env`, so we have the ability to call` Rails.env.production?` and it returns true or false, depending on whether the value of the string set for the Rails environment is production or not, but it still works just like a string in every other way.
+
+```ruby
+Rails.env.production?   # => true
+puts Rails.env          # => 'production'
+```
+
+So now let's look at [ArrayInquirer](http://api.rubyonrails.org/classes/ActiveSupport/ArrayInquirer.html). 
+Let's say that I just have a basic array and in that array I have three values: producer, director and actor.
+
+```ruby
+# ArrayInquirer example
+array = [:producer, :director, :actor]
+```
+
+I can turn this into an ArrayInquirer object in two different ways.
+
+The first, is that I can use that ActiveSupport ArrayInquirer new technique that we just saw with StringInquirer.
+
+```ruby
+roles = ActiveSupport::ArrayInquirer.new(array)
+roles.class # => ActiveSupport::ArrayInquirer
+```
+
+
+I take the array and I pass it in as an argument to ArrayInquirer new and then I set that to roles and I get back that ArrayInquirer object.
+
+Another easier, I think, way to do this, is to just call `.inquiry` on the array and it will return that ArrayInquirer object for you, It's a little shorter. 
+
+```ruby
+roles = array.inquiry
+roles.class # => ActiveSupport::ArrayInquirer
+```
+
+In both cases, we get back an object that works like an array, except that it has these extra inquirer abilities added to it.
+
+So if I have roles, producer, director, actor and I add `.inquiry` to the end:
+
+```ruby
+roles = [:producer, :director, :actor].inquiry
+```
+Now I have the ability to inquire about the contents of that array.
+
+```ruby
+roles.producer? # => true
+roles.director? # => true
+roles.actor? # => true
+roles.writer? # => false
+```
+
+`roles.producer?` returns true, so does `director?` and `actor?`, `writer?` returns false because writer is not inside the array. 
+
+In addition to these single queries. 
+We also have the ability to use any on it as well, so I can ask whether any of the values are equal to director or writer and I can do that using either symbols or using strings, it doesn't matter.
+
+```ruby
+roles.any(:director, :writer) # => true
+roles.any('director', 'writer') # => true
+```
+Both cases it returns true, because director is one of those values even though writer is not.
+
+If I were to ask it though, if roles contains writer or special effects. 
+
+```ruby
+roles.any(:writer, :special_effects) # => false
+```
+It will returns false, because neither one of those values are inside my array.
+
+You're not going to want to do this to every single one of your arrays, but there are certain cases when it is gonna be convenient to be able to have a way to easily inquire about the contents of an array and in those cases this is gonna be a great tool to have.
