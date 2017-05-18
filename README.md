@@ -1532,3 +1532,22 @@ It will keep the old behavior until you explicitly configure it to be true. So y
 
 It's an easy change to make, there's no reason that you shouldn't do it, and it increases the overall security of your Rails application.
 
+### belongs_to Requires Parent
+
+There's an important change to the default settings for `belongs_to` in Ruby on Rails 5.
+
+Typically, when we work with `belongs_to` we would expect to save that child record to the database after we've already saved the parent record to the database, That's usually the way it works.
+
+Starting in Ruby on Rails 5, that's going to be a requirement. The `belongs_to` is going to be required to have a parent by default, that's going to be a value that's controlled by a setting `belongs_to_required_by_default`.
+
+A newly generated Rails 5 app is going to have an initializer that sets this value to true. 
+
+Older apps are going to keep the false setting by default if they don't have that configuration set, if you're upgrading, you'll need to opt in to the new behavior by providing that configuration in the initializers. If you opt into it, then what will happen is that anytime you add a `belongs_to` to a class, it's going to automatically add `validates_present_of`, the parent for you, you don't need to add it yourself, it's going to automatically do that for you.
+
+You used to be able to do that yourself by using the required option when you declared the `belongs_to`. Instead, because it's going to be `:required` by default, you should use the `:optional` option whenever it's not required by default. 
+
+So you should stop using `:required` and let the default behavior kick in, you should use `:optional` if you don't want it to be the case. 
+
+In the Rails 5 as I said, in most cases I think you're going to save the parent object before you save the child object because you're going to want that parent's ID to be able to relate it to the child.
+
+The one place I think this might cause a lot of pain for people is going to be in your tests because there may be times when in your test cases you're just saving an object to the database without a parent because you're just doing unit tests or something like that on it. You're going to need to be careful about those because now you're going to have that `validates_presence_of` `:parent` that can potentially keep the object from saving if it doesn't also have a parent.
