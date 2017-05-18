@@ -1510,3 +1510,25 @@ You're not going to want to do this to every single one of your arrays, but ther
 
 For more information about ArrayInquirer see the Ruby `ArrayInquirer`[documentation](http://api.rubyonrails.org/classes/ActiveSupport/ArrayInquirer.html).
 
+
+
+### Per-Form CSRF tokens
+
+Ruby on Rails already provides developers with easy to use tokens to guard against Cross-Site Request Forgery, or CSRF for short.
+
+In Ruby on Rails 5, these have been further strengthened using per-form CSRF tokens. Per-form CSRF tokens prevents a particular technique of form hijacking, it isn't easy to steal a CSRF token, but it is possible and a stolen CSRF token could permit fake forms to still be sent to the server and be considered as legitimate.
+
+By providing a unique CSRF token per-form, then a hacker who steals a token can only send that same form back to the application.CSRF tokens are only valid for the method and action for which they were generated.
+
+A newly created Ruby on Rails 5 app will add a file to the initializers which will set per-form CSRF tokens to be true, with the following code:
+
+```ruby
+config.action_controller.per_form_csrf_tokens
+```
+
+For upgraded applications or others apps which do not have that initializer in place, it's going to be set to false by default.
+
+It will keep the old behavior until you explicitly configure it to be true. So you can add that file to your initializers, or you can add this configuration to ActionController, or any controller, `per_form_csrf_tokens = true` and then you'll be using per-form tokens instead of using a more general token.
+
+It's an easy change to make, there's no reason that you shouldn't do it, and it increases the overall security of your Rails application.
+
