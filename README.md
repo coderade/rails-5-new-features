@@ -48,6 +48,8 @@ In addition, it will show the features that are being deprecated or completely r
     - [Changes to parameters/params](#changes-to-parametersparams)
     - [Enumerable#without](#enumerablewithout)
     - [Enumerable#pluck](#enumerablepluck)
+    - [ArrayInquirer](#arrayinquirer)
+
 
 
 
@@ -1505,3 +1507,6 @@ roles.any(:writer, :special_effects) # => false
 It will returns false, because neither one of those values are inside my array.
 
 You're not going to want to do this to every single one of your arrays, but there are certain cases when it is gonna be convenient to be able to have a way to easily inquire about the contents of an array and in those cases this is gonna be a great tool to have.
+
+For more information about ArrayInquirer see the Ruby `ArrayInquirer`[documentation](http://api.rubyonrails.org/classes/ActiveSupport/ArrayInquirer.html).
+
