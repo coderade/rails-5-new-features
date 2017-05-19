@@ -1684,7 +1684,7 @@ The responders were previously deprecated, so this is a change that we should've
 
 Those have now been removed from the Rails core, if you still want to use them, you can add them back in by loading a third-party [gem](https://github.com/plataformatec/responders). This is not an official Rails gem, but it is being maintained by a close and reliable source.To use it, just put responders into your gem file and run `bundle install`.
 
-Now if you aren't completely clear on what the responders did, let me give you a quick refresher. 
+Now if you aren't completely clear on what the responders did, let me give you a quick refresher:
 
 
 ```ruby
@@ -1715,7 +1715,7 @@ So `respond_with` and class level `respond_to` are out.
 
 Notice that I keep saying class level `respond_to`, that's because you should not confuse it with the instance level `respond_to` which is still available for use.
 
-Let's take a look at that.
+Let's take a look at that:
 
 ```ruby
 class UsersController < ApplicationController
@@ -1737,3 +1737,45 @@ In the above example we have another UsersController and in it I have my index a
 I'm calling `respond_to` and I'm giving it a block and I'm asking it to respond in different ways based on the format that was requested. It's a very similar idea.
 
 This version, though, is very much in use and it is the recommended way to respond in different formats. Unlike using `respond_with`, it keeps the rendering in the controller and the view where we can see it, makes it very clear what's happening.
+
+### Other deprecations and deletions
+
+Previsously, the doc showedd the most significant deprecations and deletions, the ones that are going to affect the most developers. 
+There are also many smaller changes that will apply to fewer developers, but which can be critically important if you happen to have code which depends on it. Let's look at some of those changes:
+
+First, you should assume that any previously deprecated code has now been removed, that's the way software development works, we deprecate code before a major version comes out, let everyone know that things are gonna go away and then, when the major version is released, all that code gets pushed out, so we have a cleaner code base to work with, going forward.
+
+Two configurations that you may have left laying around in your config files are:
+
+* ActiveRecord::Base.raise_in_transactional_callbacks
+* Application::Configuration#serve_static_assets
+
+Both of these do nothing now and can be safely removed from `Application.rb`, if you have it there. 
+
+Rails 5 also removed support for Debugger, that's in part because Ruby 2.2 no longer has support for Debugger. Instead, it uses [Byebug](https://github.com/deivid-rodriguez/byebug) instead. So, if you've been using the Debugger in the past, you'll wanna learn about the differences with Byebug.
+
+A few Rake tasks related to documentation has been removed: `rake doc:app`, `doc:rails` and `doc:guides` have all been removed. 
+
+In ActionController, there are a few changes. They've deprecated `redirect_to` when passing in the symbol `(:back)`. Instead, you should use `redirect_back`. They do very similar things, they just handle the refer slightly different. 
+
+One important change is to make sure that all of your view templates have a handler extension at the end, such as `.erb`. Templates which don't have that handler extension on them no longer going to assume that it's an `.erb` file, like they did in the past.
+Now, they're going to generate it as a `.raw` type, which means that it's not going to process your `.erb` code in there, it's going to potentially expose it to the world and it's not going to bind your instance variables for processing inside those `.erb` tags anymore. So, you'll wanna make sure that all of those templates have `.erb` at the end. 
+
+Another controller method, `skip_action_callback` has been deprecated and have been removed in Rails 5.1. You probably weren't using this one anyway. What you should use instead is `skip_before_action`, `skip_after_action` or `skip_around_action` instead. `skip_action_callback` has been deprecated in favor of using one of those.
+
+In ActiveRecord and ActiveRelation, you should no longer use `#unique` as a scope, instead, you should use `#distinct`. It was decided that unique was confusing because it sounds like it's doing something similar to what unique does when called on an array, but it's not exactly the same. It's really interfacing with the database and distinct is a better way to deal with that. 
+
+All the code related to `serialized_attributes` has been removed, so you can't use that anymore and support for the gems `protected_attributes` and `activerecord-deprecated_finders` has also been removed.
+
+These are both features that used to exist in the core of Rails, but were moved off into their own gems for people who needed them. But there was some support required in the Rails codebase to still make those work. That support has now been removed, in order to make way for new changes, so unless something changes with those gems, they're not going to work anymore. Now, you might just check with those gems if you need them, because they may be able to make updates on their side that will make them work again with Rails 5, but the old code that they depended on is no longer in Rails 5.
+
+In ActionMailer, the `#deliver` and `#deliver!` methods are now gone, as well as the `ActionMailer` `*_path` helpers that used to be there.
+
+If you write tests for your applications, then you wanna pay particular attention to some changes to the controller tests, because the `assigns` and `assert_template` methods have been moved off into a gem. They're not deprecated they're removed completely and they're moved into a gem. If you need them again, then you'll need to load the Rails-controller-testing [gem](https://github.com/rails/rails-controller-testing) in order to get that functionality back.
+
+It's likely to be a controversial change, because some people were using assigns to test that instance variables were being assigned in their controllers. But it was decided by the core team that that's not a best practice for how you test your controllers and therefore it's been moved to a gem.
+
+Also, `ActionController::TestCase#get` and `#post` have been deprecated, so if you were using `#get` and `#post` in order to load requests in ActionController, you should now use `#process` instead and then you provide `#process` with a method of either get or post.
+You can look up more information on how process works to see how to make that change. 
+
+And, in fact, all of `ActionController` TestCase is being deprecated and has been moved into a separate gem in Rails 5.1, you should use `ActionDispatch::IntegrationTest` instead.
