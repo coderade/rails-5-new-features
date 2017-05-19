@@ -1553,3 +1553,32 @@ So you should stop using `:required` and let the default behavior kick in, you s
 In the Rails 5 as I said, in most cases I think you're going to save the parent object before you save the child object because you're going to want that parent's ID to be able to relate it to the child.
 
 The one place I think this might cause a lot of pain for people is going to be in your tests because there may be times when in your test cases you're just saving an object to the database without a parent because you're just doing unit tests or something like that on it. You're going to need to be careful about those because now you're going to have that `validates_presence_of` `:parent` that can potentially keep the object from saving if it doesn't also have a parent.
+
+
+
+## Deprecations and Deletions
+
+Ruby on Rails 5 has many new features and improvements. But it's also going to remove a few features as well.
+
+### Deprecated Filter Callbacks
+
+Previously in your controllers you could use `before_filter`, `after_filter` and `around_filter`. 
+
+Instead, now you want to use `before_action`, `after_action` and `around_action`. That's the accepted way to do these, so stop using the filter version and use the action version instead. That applies also to the variations on these, such as `append_before_filter`, `prepend_before_filter` and `skip_before_filter`. All of them have equivalents using the word action instead.
+ 
+So anywhere in your controllers where you have before filter, you want to change that to be before action instead.
+
+```ruby
+class ProductsController < ApllicationController
+    #before_filter :confirm_logged_in   => DEPRECATED
+    before_action :confirm_logged_in #  => TO BE USED NOW
+    def index
+        @products = Product.all
+    end
+end
+```
+
+
+ The new methods have been with us for a little while. They were introduced in Rails 4.2, but now the old ones are being deprecated and you should expect that the old ones will be removed entirely in Rails 5.1. 
+ 
+ It's an easy change to make, so there's no reason not to update them all today.
