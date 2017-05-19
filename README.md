@@ -42,7 +42,7 @@ In addition, it will show the features that are being deprecated or completely r
     - [Date and time improvements](#date-and-time-improvements)
     - [Relations in batches](#relations-in-batches)
     - [ActiveRecord Secure Tokens](#activerecord-secure-tokens)
-    - [Rails generate command](#rails-generate-command)
+    - [Rails Generate command](#rails-generate-command)
     - [Migration class](#migration-class)
     - [Abort ActiveRecord Callbacks](#abort-activerecord-callbacks)
     - [Changes to parameters/params](#changes-to-parametersparams)
@@ -1606,7 +1606,7 @@ The above example is what I'm talking about. It was possible before in your cont
 When you do it this way, it's not actually rendering nothing. It's still sending an HTML header with the status code letting the browser know that the request was answered successfully.
 
 That's the effect that we probably want, but it isn't entirely clear from what you see in the code that that's what's happening and therefore, it's been decided that it's much better to use the head method, which returns an HTML header with whatever status code or options that you set, but which has an empty body.
-most likely it's going to
+
 ```ruby
 class ProductsController < ApllicationController
   
@@ -1621,5 +1621,23 @@ class ProductsController < ApllicationController
 end
 ```
 
-They do the same thing, but the second one makes it clear what's happening. For this reason, using `render(:nothing => true)` in Rails 5 will still work, but you'll also get a deprecation warning in your logs or in the console and this has been removed on the Rails 5.1 version.
+They do the same thing, but the second one makes it clear what's happening. For this reason, using `render(:nothing => true)` in Rails 5 will still work, but you'll also get a deprecation warning in your logs or in the console and if you are using the Rails 5.1 version this won't work anymore. 
 
+
+### Moved RecordTagHelper to [Gem](https://github.com/rails/record_tag_helper)
+
+The RecordTagHelper class has been moved to RubyGem. RecordTagHelper is made up, really of just two methods, those are `div_for` and `content_tag_for`.
+
+```ruby
+div_for(@person, :class => 'student')
+
+content_tag_for(:tr, @person) {...}
+```
+
+So those are no longer going to be available. What those did, was they took an object, like an Active Record object and they constructed a div or a content tag based on the attributes of that object. 
+
+It's a feature that not a lot of people were using and so it was deemed better off in a Ruby gem than it is inside the Rails core.
+
+If you still want to use it, you can use the Ruby gem. All you have to do is add `record_tag_helper` to your gem file, run bundle install and then you'll have that same functionality available to you. But for everyone else, these methods are going to be removed.
+
+I do want to make a footnote here, which is that the `content_tag` method is still available, that's different than `content_tag_for`. `content_tag_for` was specifically about working with the attributes of an active record object and `content_tag` just helps you generate a basic content tag and it's still on the Rails core.
