@@ -1782,3 +1782,7 @@ Also, `ActionController::TestCase#get` and `#post` have been deprecated, so if y
 You can look up more information on how process works to see how to make that change. 
 
 And, in fact, all of `ActionController` TestCase is being deprecated and has been moved into a separate gem in Rails 5.1, you should use `ActionDispatch::IntegrationTest` instead.
+
+---
+
+For more information about the changes on the Rails 5.0 release, look the Ruby on Rails 5.0 Release Notes [link](http://guides.rubyonrails.org/5_0_release_notes.html).
