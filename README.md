@@ -51,8 +51,9 @@ In addition, it will show the features that are being deprecated or completely r
     - [ArrayInquirer](#arrayinquirer)
     - [Per-Form CSRF tokens](#per-form-csrf-tokens)
     - [belongs_to Requires Parent](#belongs_to-requires-parent)
-
-
+- [Deprecations and Deletions](#deprecations-and-deletions)
+    - [Deprecated Filter Callbacks](#deprecated-filter-callbacks)
+    - [Moved RecordTagHelper to [Gem](https://github.com/rails/record_tag_helper)](#moved-recordtaghelper-to-gemhttpsgithubcomrailsrecord_tag_helper)
 
 
 ## About Ruby on Rails 5
@@ -1641,3 +1642,37 @@ It's a feature that not a lot of people were using and so it was deemed better o
 If you still want to use it, you can use the Ruby gem. All you have to do is add `record_tag_helper` to your gem file, run bundle install and then you'll have that same functionality available to you. But for everyone else, these methods are going to be removed.
 
 I do want to make a footnote here, which is that the `content_tag` method is still available, that's different than `content_tag_for`. `content_tag_for` was specifically about working with the attributes of an active record object and `content_tag` just helps you generate a basic content tag and it's still on the Rails core.
+
+
+### Moved XML serialization to [Gem](https://github.com/rails/activemodel-serializers-xml)
+
+XML Serialization has been moved to a RubyGem. 
+We're really talking about two main classes that have been moved: `ActiveModel::Serializers::Xml` and `ActiveRecord::Serialization::XmlSerializer` and there's also one method inside ActiveRecord Serialization which doesn't exist anymore, which is `ActiveRecord::Serialization#to_xml`. and that's the main way that you've probably been using Serialization before.
+
+This code simply just isn't needed as part of the Rails core anymore and it's better to let folks who need it load it, and keep the core Rails lean for everyone else.
+
+And in truth, JSON has become a more popular way to perform serialization than XML, if you still need XML Serialization, then you just need to load the [RubyGem](https://github.com/rails/activemodel-serializers-xml) into your gem file. 
+
+You can do that by adding `activemodel-serializers.xml` and running `bundle install` and then you'll have that gem and all that functionality available to you. 
+
+Now in case you're not clear on what this XML serialization is,let look a quick example:
+
+In Rails 4, you could take an active record object, like person, create a new instance of it, and then call to_xml on it, and you would get back XML.
+
+```ruby
+# Rails 4
+
+person = Person.new
+person.to_xml
+```
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<person>
+    <id>379</id>
+    <first-name>Kevin</first-name>
+    <last-name>Skoglung</last-name>
+</person>
+```
+
+It was built off the attributes that were inside that object. You've been working with XML or you're calling `to_xml` on any object, then you're going to want to pay close attention. Because removing these classes could break your code.
