@@ -1579,6 +1579,47 @@ end
 ```
 
 
- The new methods have been with us for a little while. They were introduced in Rails 4.2, but now the old ones are being deprecated and you should expect that the old ones will be removed entirely in Rails 5.1. 
+ The new methods have been with us for a little while. They were introduced in Rails 4.2, but now the old ones are being deprecated and has been removed entirely in Rails 5.1. 
  
  It's an easy change to make, so there's no reason not to update them all today.
+
+ ### Deprecated Render Nothing
+
+Another change in Ruby on Rails five is that render nothing has been deprecated.
+
+```ruby
+class ProductsController < ApllicationController
+  
+    def index
+        if authorized_user
+            @products = Product.all
+            render('index')
+        else
+            render(:nothing => true)    
+        end
+    end
+end
+```
+
+The above example is what I'm talking about. It was possible before in your controller to simply render nothing at times. So, for example, if we have an authorized user we would render a page to them, but otherwise, we might render nothing, I did that with `render(:nothing => true)`.
+
+When you do it this way, it's not actually rendering nothing. It's still sending an HTML header with the status code letting the browser know that the request was answered successfully.
+
+That's the effect that we probably want, but it isn't entirely clear from what you see in the code that that's what's happening and therefore, it's been decided that it's much better to use the head method, which returns an HTML header with whatever status code or options that you set, but which has an empty body.
+most likely it's going to
+```ruby
+class ProductsController < ApllicationController
+  
+    def index
+        if authorized_user
+            @products = Product.all
+            render('index')
+        else
+            head(:ok) #  => TO BE USED NOW
+        end
+    end
+end
+```
+
+They do the same thing, but the second one makes it clear what's happening. For this reason, using `render(:nothing => true)` in Rails 5 will still work, but you'll also get a deprecation warning in your logs or in the console and this has been removed on the Rails 5.1 version.
+
