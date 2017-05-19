@@ -54,6 +54,9 @@ In addition, it will show the features that are being deprecated or completely r
 - [Deprecations and Deletions](#deprecations-and-deletions)
     - [Deprecated Filter Callbacks](#deprecated-filter-callbacks)
     - [Moved RecordTagHelper to [Gem](https://github.com/rails/record_tag_helper)](#moved-recordtaghelper-to-gemhttpsgithubcomrailsrecord_tag_helper)
+    - [Moved XML serialization to [Gem](https://github.com/rails/activemodel-serializers-xml)](#moved-xml-serialization-to-gemhttpsgithubcomrailsactivemodel-serializers-xml)
+    - [Removed Responders](#removed-responders)
+    - [Other deprecations and deletions](#other-deprecations-and-deletions)
 
 
 ## About Ruby on Rails 5
