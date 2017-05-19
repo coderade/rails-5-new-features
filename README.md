@@ -1676,3 +1676,64 @@ person.to_xml
 ```
 
 It was built off the attributes that were inside that object. You've been working with XML or you're calling `to_xml` on any object, then you're going to want to pay close attention. Because removing these classes could break your code.
+
+
+### Removed Responders
+
+The responders were previously deprecated, so this is a change that we should've anticipated, but now they've been completely removed and you'll want to be careful if you were using `ActionController#respond_with` or the class level version of `ActionController.respond_to` in your controllers. 
+
+Those have now been removed from the Rails core, if you still want to use them, you can add them back in by loading a third-party [gem](https://github.com/plataformatec/responders). This is not an official Rails gem, but it is being maintained by a close and reliable source.To use it, just put responders into your gem file and run `bundle install`.
+
+Now if you aren't completely clear on what the responders did, let me give you a quick refresher. 
+
+
+```ruby
+class UsersController < ApplicationController
+    respond_to :html, :xml, :json
+
+    def index
+        @users = User.all
+        respond_with(@users)
+    end
+
+    def show
+        @user = User.find(params[:id])
+        respond_with(@user)
+    end
+end
+```
+
+In the above example we have a UsersController and you can see at the top I'm calling `respond_to` followed by several different formats. 
+
+These are the formats that I want to allow responding to, and if one of those formats comes in as a request, then the `respond_with` that's being called in the index and the show action, is going to attempt to respond with the appropriate format.
+
+It's going to first look for either a matching template, if it's available or if not, it's going to try and render the object using built-in serialization methods. 
+
+Now it's decided that this approach keeps too much hidden and when depending on automatic serialization, it actually encourages developers to bury their code about the response into their models and not in the controllers and the views where it really belongs. 
+
+So `respond_with` and class level `respond_to` are out.
+
+Notice that I keep saying class level `respond_to`, that's because you should not confuse it with the instance level `respond_to` which is still available for use.
+
+Let's take a look at that.
+
+```ruby
+class UsersController < ApplicationController
+
+    def index
+        @users = User.all
+        respond_to do |format|
+            format.html
+            format.xml { render('users.xml')}
+            format.json { render('users.json')}
+        end
+    end
+end
+```
+
+
+In the above example we have another UsersController and in it I have my index action and I'm calling `respond_to` inside the action, I'm not calling it outside an action, that's the class level, I'm calling it inside the action where it's an instance level call. 
+
+I'm calling `respond_to` and I'm giving it a block and I'm asking it to respond in different ways based on the format that was requested. It's a very similar idea.
+
+This version, though, is very much in use and it is the recommended way to respond in different formats. Unlike using `respond_with`, it keeps the rendering in the controller and the view where we can see it, makes it very clear what's happening.
